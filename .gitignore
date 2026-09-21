@@ -1,0 +1,14 @@
+# Nothing derived from the corpora may be published: the IEMOCAP licence
+# forbids passing on the data or derivatives of it.
+*.pkl
+*.npy
+*.pt
+*.safetensors
+*.wav
+*.mp4
+*.csv
+datasets/
+outputs/
+models/
+__pycache__/
+*.pyc
