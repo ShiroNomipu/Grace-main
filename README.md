@@ -40,7 +40,8 @@ memory), `outputs/runs/R20261027-03/dev_checks.json`, `outputs/runs/R20261027-04
   licensed corpus. The utterance texts are removed from `runs/lock_20261022/lock_cpu_analyses.json`.
 - MELD data; download it from the official source.
 - Model weights and training logs. Checkpoints of the WavLM Large experts and of the MELD WavLM Base+ experts were
-  not kept; their predictions are included. Other checkpoints are available from the corresponding authors.
+  not kept; their MELD predictions are included here and their IEMOCAP predictions are among the files available
+  on request. Other checkpoints are available from the corresponding authors.
 
 ## Recomputing the paper's numbers
 
@@ -81,6 +82,11 @@ authors' machines in `config.py`; set `GRACE_MODEL_PATH`, `GRACE_DATA_ROOT` and 
 The LLM and the WavLM encoders come from their official Hugging Face repositories (`Qwen/Qwen2.5-7B-Instruct`,
 `microsoft/wavlm-base-plus`, `microsoft/wavlm-large`); emotion2vec features are extracted with
 `extract_audio_emotion2vec.py` and `extract_audio_frames.py`.
+
+## License
+
+The code, run records and judge outputs in this repository are released under the MIT License (`LICENSE`).
+MELD and IEMOCAP, and anything derived from them, remain under the terms of their own licences.
 
 ## Citation
 
