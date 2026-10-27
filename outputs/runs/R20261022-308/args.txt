@@ -1,0 +1,1 @@
+--dataset iemocap --n_prev_turns 1 --n_blocks 2 --no_frame_attn --modality_dropout 0.3 --mdrop_consistent --adapter_lr 5e-5 --adapter_wd 0.05 --cosine --epochs 3 --seed 3047 --fast_eval --eval_last --ctx 16

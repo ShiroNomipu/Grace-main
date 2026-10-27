@@ -1,0 +1,37 @@
+{
+ "src": "R20261021-102",
+ "args": {
+  "src": "R20261021-102",
+  "out_dir": "outputs/runs/R20261022-01/eval",
+  "limit": 0,
+  "mode": "online",
+  "split": "dev"
+ },
+ "src_args": {
+  "--dataset": "iemocap",
+  "--epochs": "3",
+  "--seed": "123",
+  "--ctx": "16",
+  "--future_mode": "dual",
+  "--future_k": "2",
+  "--future_pdrop": "0.5",
+  "--tag": "v1f_dual_c16_s123"
+ },
+ "adapter": "outputs/runs/R20261021-102/v1f_dual_c16_s123_lora_last",
+ "n": 647,
+ "label_list": [
+  "ang",
+  "exc",
+  "fru",
+  "hap",
+  "neu",
+  "sad"
+ ],
+ "weighted_f1": 0.6225524337029027,
+ "ref_weighted_f1_last": 0.7093389754138794,
+ "elapsed_sec": 102.6,
+ "sha256": {
+  "script": "5a8017c0a38d079e17676eacd167d7fda54e02273316d49bb9e56e71dd7a4137",
+  "adapter_model.safetensors": "a7103b22018124849b3adc1993a017273a1124625c32a1601ca0c249a4dcbc87"
+ }
+}

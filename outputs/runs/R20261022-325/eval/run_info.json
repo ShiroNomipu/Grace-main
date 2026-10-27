@@ -1,0 +1,37 @@
+{
+  "args": {
+    "checkpoint": "outputs/runs/R20261022-308/pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s3047_ctx16_last",
+    "dataset": "iemocap",
+    "split": "dev",
+    "n_blocks": 2,
+    "n_prev_turns": 1,
+    "no_frame_attn": true,
+    "conditions": [
+      "clean",
+      "drop"
+    ],
+    "out_dir": "outputs/runs/R20261022-325/eval",
+    "limit": 0,
+    "fast_eval": true,
+    "ctx": 16,
+    "meld_audio": false,
+    "cue_file": null
+  },
+  "n": 647,
+  "elapsed_sec": 396.7,
+  "sec_per_1k_samples": 613.1,
+  "label_list": [
+    "ang",
+    "exc",
+    "fru",
+    "hap",
+    "neu",
+    "sad"
+  ],
+  "sha256": {
+    "eval_dump_preds.py": "aed3ba0bf6d37aa9c9e74b27217956ca024fa5630c233b97b2e471ee59c22830",
+    "run_pilot3_dialogue_visual.py": "aaa8eab98d7e9025f7fd515ab5eb514566b36e934864ff140ad066d7a07a9098",
+    "adapter_model.safetensors": "0cd503a9e9f7993cb1c6e7542334c6510bad18cd7b7a6be80eb1b544f3d1b710",
+    "visual_adapter.pt": "dfaf6dc8dd11a06e511cb1617fda2e0c050208943850391deab4ff150ba2ef2b"
+  }
+}

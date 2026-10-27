@@ -1,0 +1,74 @@
+{
+ "meld": {
+  "train": [
+   "R20261022-301",
+   "R20261022-302",
+   "R20261022-303",
+   "R20261022-304",
+   "R20261022-305"
+  ],
+  "tag": [
+   "pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s123_ctx16_maudio",
+   "pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s42_ctx16_maudio",
+   "pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s3047_ctx16_maudio",
+   "pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s7_ctx16_maudio",
+   "pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s2026_ctx16_maudio"
+  ],
+  "dump": {
+   "dev": [
+    "R20261022-311",
+    "R20261022-313",
+    "R20261022-315",
+    "R20261022-317",
+    "R20261022-319"
+   ],
+   "test": [
+    "R20261022-312",
+    "R20261022-314",
+    "R20261022-316",
+    "R20261022-318",
+    "R20261022-320"
+   ]
+  }
+ },
+ "iemocap": {
+  "train": [
+   "R20261022-306",
+   "R20261022-307",
+   "R20261022-308",
+   "R20261022-309",
+   "R20261022-310"
+  ],
+  "tag": [
+   "pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s123_ctx16",
+   "pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s42_ctx16",
+   "pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s3047_ctx16",
+   "pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s7_ctx16",
+   "pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s2026_ctx16"
+  ],
+  "dump": {
+   "dev": [
+    "R20261022-321",
+    "R20261022-323",
+    "R20261022-325",
+    "R20261022-327",
+    "R20261022-329"
+   ],
+   "test": [
+    "R20261022-322",
+    "R20261022-324",
+    "R20261022-326",
+    "R20261022-328",
+    "R20261022-330"
+   ]
+  }
+ },
+ "seeds": [
+  123,
+  42,
+  3047,
+  7,
+  2026
+ ],
+ "judge": "R20261022-340"
+}

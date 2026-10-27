@@ -1,0 +1,1 @@
+--dataset iemocap --split dev --n_blocks 2 --n_prev_turns 1 --no_frame_attn --fast_eval --checkpoint outputs/runs/R20261017-16/pilot3_dial1t_2blk_iemocap_nofa_mdrop30_alr5e-05_cos_s123_last --out_dir outputs/runs/R20261017-27/eval

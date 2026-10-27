@@ -1,0 +1,14 @@
+{
+ "design": "Ensemble row (2026-10-25; planned since 10-22 as a separately labelled row, never compared with single models).\nIEMOCAP lock dumps: mean of the 5 seeds' log-softmax text scores (dual online / dual full) + alpha * mean of the 5 E2\nlog-probs; alpha chosen on dev (grid, ties -> smaller); waiting 20% by the online ensemble's confidence. Test reported.\nUsage (repo root): python <this> --out <json>",
+ "alpha_dev": {
+  "online": 0.3,
+  "full": 0.3
+ },
+ "test": {
+  "ens_online_text": 71.67,
+  "ens_full_text": 73.07,
+  "ens_online+e2": 75.97,
+  "ens_full+e2": 75.6,
+  "ens_wait20+e2": 75.59
+ }
+}

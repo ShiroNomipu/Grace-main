@@ -1,0 +1,650 @@
+{
+ "design": "B1 judgment and ledger (2026-10-22; card runs/\u9501\u5b9a\u6279_20261022/B1_GRACE\u4fee\u590d\u91cd\u8dd1_\u5361_2026-10-22.md; line logged in\ncharter/decisions.md before any B1 training ran). GRACE = audio injected into the LLM (dropout-mask fix, 15 past turns),\nseeds 123/42/3047/7/2026 paired with the lock batch by seed; test wF1; last epoch. Run ids only from\nruns/lock_20261022/b1_runs.json and lock_runs.json.\nLine: B1-L1 (IEMOCAP) late fusion beats injection: (dual online + E2, dev alpha) - GRACE (audio on), mean >= +0.5 and\n>= 4/5 seeds > 0.\nReported, not judged, both datasets: GRACE with audio on / off (same model; \"drop\" = the training-time dropped state);\nGRACE vs online-only text and vs dual online text; GRACE + E2 (alpha on dev); E2 rescue rate on GRACE errors; dialogue\nbootstrap (B = 10000, seed 20261022) of each paired difference; per-class F1; each dump's clean wF1 against the run's own\nlast-epoch test metric (|diff| > 0.05 points -> error).\nUsage (repo root): python <this> --out <json> [--dry]\n  --dry: code test only, IEMOCAP, with the old locked GRACE dumps (R20261017-27.., -28..) and the old text16 dumps\n  (R20261021-11..20) standing in for both text variants; provenance and dump checks skipped. Must reproduce gate 1:\n  GRACE 72.31, GRACE + E2 73.39 (alpha 0.2), text16 + E2 74.24 (alpha 0.3).",
+ "datasets": {
+  "iemocap": {
+   "alpha_dev": {
+    "grace+e2": 0.2,
+    "dual_online+e2": 0.3
+   },
+   "dump_check": [
+    {
+     "seed": 123,
+     "train_metric": 72.89,
+     "dump": 72.89
+    },
+    {
+     "seed": 42,
+     "train_metric": 72.29,
+     "dump": 72.29
+    },
+    {
+     "seed": 3047,
+     "train_metric": 72.79,
+     "dump": 72.79
+    },
+    {
+     "seed": 7,
+     "train_metric": 72.98,
+     "dump": 72.98
+    },
+    {
+     "seed": 2026,
+     "train_metric": 74.97,
+     "dump": 74.97
+    }
+   ],
+   "test": {
+    "grace_audio_on": {
+     "mean": 73.18,
+     "sd": 1.03,
+     "per_seed": [
+      72.89,
+      72.29,
+      72.79,
+      72.98,
+      74.97
+     ],
+     "per_class_f1": [
+      70.56,
+      74.29,
+      71.43,
+      61.58,
+      73.79,
+      82.28
+     ]
+    },
+    "grace_audio_off": {
+     "mean": 71.77,
+     "sd": 1.31,
+     "per_seed": [
+      72.22,
+      69.98,
+      71.2,
+      71.86,
+      73.55
+     ],
+     "per_class_f1": [
+      67.73,
+      73.06,
+      70.18,
+      59.96,
+      71.55,
+      82.74
+     ]
+    },
+    "online_only_text": {
+     "mean": 71.45,
+     "sd": 1.09,
+     "per_seed": [
+      70.13,
+      72.62,
+      70.45,
+      71.97,
+      72.08
+     ],
+     "per_class_f1": [
+      65.7,
+      72.65,
+      70.38,
+      61.85,
+      70.76,
+      82.38
+     ]
+    },
+    "dual_online_text": {
+     "mean": 71.7,
+     "sd": 0.53,
+     "per_seed": [
+      70.93,
+      71.71,
+      72.18,
+      71.47,
+      72.21
+     ],
+     "per_class_f1": [
+      64.87,
+      72.53,
+      69.67,
+      62.69,
+      71.89,
+      83.58
+     ]
+    },
+    "grace+e2": {
+     "mean": 74.66,
+     "sd": 0.63,
+     "per_seed": [
+      75.03,
+      74.28,
+      73.93,
+      74.52,
+      75.53
+     ],
+     "per_class_f1": [
+      67.73,
+      79.61,
+      72.14,
+      59.94,
+      77.07,
+      82.21
+     ]
+    },
+    "dual_online+e2": {
+     "mean": 74.17,
+     "sd": 0.7,
+     "per_seed": [
+      74.53,
+      75.13,
+      73.46,
+      74.15,
+      73.55
+     ],
+     "per_class_f1": [
+      64.87,
+      78.51,
+      71.81,
+      58.62,
+      76.96,
+      83.73
+     ]
+    }
+   },
+   "paired_test": {
+    "grace_audio_on - grace_audio_off": {
+     "mean": 1.42,
+     "sd": 0.61,
+     "per_seed": [
+      0.67,
+      2.31,
+      1.59,
+      1.11,
+      1.41
+     ],
+     "n_pos": 5,
+     "ci95": [
+      0.05,
+      2.81
+     ],
+     "p_two_sided": 0.0404
+    },
+    "grace_audio_on - online_only_text": {
+     "mean": 1.73,
+     "sd": 1.37,
+     "per_seed": [
+      2.77,
+      -0.33,
+      2.34,
+      1.0,
+      2.89
+     ],
+     "n_pos": 4,
+     "ci95": [
+      0.18,
+      3.26
+     ],
+     "p_two_sided": 0.027
+    },
+    "grace_audio_on - dual_online_text": {
+     "mean": 1.49,
+     "sd": 0.92,
+     "per_seed": [
+      1.96,
+      0.59,
+      0.62,
+      1.51,
+      2.76
+     ],
+     "n_pos": 5,
+     "ci95": [
+      -0.09,
+      3.01
+     ],
+     "p_two_sided": 0.0674
+    },
+    "dual_online+e2 - grace_audio_on": {
+     "mean": 0.98,
+     "sd": 1.56,
+     "per_seed": [
+      1.63,
+      2.84,
+      0.67,
+      1.18,
+      -1.42
+     ],
+     "n_pos": 4,
+     "ci95": [
+      -1.74,
+      3.84
+     ],
+     "p_two_sided": 0.47
+    },
+    "grace+e2 - grace_audio_on": {
+     "mean": 1.47,
+     "sd": 0.64,
+     "per_seed": [
+      2.13,
+      1.98,
+      1.14,
+      1.54,
+      0.56
+     ],
+     "n_pos": 5,
+     "ci95": [
+      -0.7,
+      3.84
+     ],
+     "p_two_sided": 0.1918
+    },
+    "dual_online+e2 - grace+e2": {
+     "mean": -0.49,
+     "sd": 1.01,
+     "per_seed": [
+      -0.5,
+      0.86,
+      -0.47,
+      -0.37,
+      -1.98
+     ],
+     "n_pos": 1,
+     "ci95": [
+      -1.72,
+      0.67
+     ],
+     "p_two_sided": 0.4444
+    }
+   },
+   "e2_rescue_on_grace_errors": 41.95,
+   "verdict_B1_L1": {
+    "mean": 0.98,
+    "n_pos": 4,
+    "ci95": [
+     -1.74,
+     3.84
+    ],
+    "pass": true
+   }
+  },
+  "meld": {
+   "alpha_dev": {
+    "grace+e2": 0.05,
+    "dual_online+e2": 0
+   },
+   "dump_check": [
+    {
+     "seed": 123,
+     "train_metric": 66.86,
+     "dump": 66.86
+    },
+    {
+     "seed": 42,
+     "train_metric": 66.95,
+     "dump": 66.95
+    },
+    {
+     "seed": 3047,
+     "train_metric": 67.23,
+     "dump": 67.23
+    },
+    {
+     "seed": 7,
+     "train_metric": 66.89,
+     "dump": 66.89
+    },
+    {
+     "seed": 2026,
+     "train_metric": 67.38,
+     "dump": 67.38
+    }
+   ],
+   "test": {
+    "grace_audio_on": {
+     "mean": 67.06,
+     "sd": 0.23,
+     "per_seed": [
+      66.86,
+      66.95,
+      67.23,
+      66.89,
+      67.38
+     ],
+     "per_class_f1": [
+      79.91,
+      61.95,
+      45.1,
+      54.15,
+      60.84,
+      29.98,
+      45.59
+     ]
+    },
+    "grace_audio_off": {
+     "mean": 67.81,
+     "sd": 0.53,
+     "per_seed": [
+      67.16,
+      68.36,
+      68.34,
+      67.58,
+      67.58
+     ],
+     "per_class_f1": [
+      80.22,
+      63.28,
+      46.22,
+      55.73,
+      61.73,
+      30.06,
+      45.32
+     ]
+    },
+    "online_only_text": {
+     "mean": 67.15,
+     "sd": 0.5,
+     "per_seed": [
+      67.83,
+      66.61,
+      66.84,
+      67.47,
+      66.98
+     ],
+     "per_class_f1": [
+      79.95,
+      63.29,
+      44.52,
+      53.15,
+      62.15,
+      33.43,
+      39.14
+     ]
+    },
+    "dual_online_text": {
+     "mean": 67.26,
+     "sd": 0.46,
+     "per_seed": [
+      67.27,
+      66.52,
+      67.56,
+      67.25,
+      67.73
+     ],
+     "per_class_f1": [
+      80.1,
+      63.87,
+      44.39,
+      52.96,
+      62.5,
+      31.28,
+      38.92
+     ]
+    },
+    "grace+e2": {
+     "mean": 67.27,
+     "sd": 0.22,
+     "per_seed": [
+      67.17,
+      67.03,
+      67.59,
+      67.19,
+      67.35
+     ],
+     "per_class_f1": [
+      80.09,
+      61.65,
+      45.38,
+      55.1,
+      61.28,
+      28.03,
+      45.94
+     ]
+    },
+    "dual_online+e2": {
+     "mean": 67.26,
+     "sd": 0.46,
+     "per_seed": [
+      67.27,
+      66.52,
+      67.56,
+      67.25,
+      67.73
+     ],
+     "per_class_f1": [
+      80.1,
+      63.87,
+      44.39,
+      52.96,
+      62.5,
+      31.28,
+      38.92
+     ]
+    }
+   },
+   "paired_test": {
+    "grace_audio_on - grace_audio_off": {
+     "mean": -0.74,
+     "sd": 0.52,
+     "per_seed": [
+      -0.3,
+      -1.41,
+      -1.11,
+      -0.69,
+      -0.2
+     ],
+     "n_pos": 0,
+     "ci95": [
+      -1.15,
+      -0.34
+     ],
+     "p_two_sided": 0.0006
+    },
+    "grace_audio_on - online_only_text": {
+     "mean": -0.08,
+     "sd": 0.65,
+     "per_seed": [
+      -0.97,
+      0.34,
+      0.39,
+      -0.58,
+      0.41
+     ],
+     "n_pos": 3,
+     "ci95": [
+      -0.93,
+      0.73
+     ],
+     "p_two_sided": 0.85
+    },
+    "grace_audio_on - dual_online_text": {
+     "mean": -0.2,
+     "sd": 0.35,
+     "per_seed": [
+      -0.41,
+      0.43,
+      -0.32,
+      -0.37,
+      -0.34
+     ],
+     "n_pos": 1,
+     "ci95": [
+      -1.02,
+      0.62
+     ],
+     "p_two_sided": 0.6194
+    },
+    "dual_online+e2 - grace_audio_on": {
+     "mean": 0.2,
+     "sd": 0.35,
+     "per_seed": [
+      0.41,
+      -0.43,
+      0.32,
+      0.37,
+      0.34
+     ],
+     "n_pos": 4,
+     "ci95": [
+      -0.62,
+      1.02
+     ],
+     "p_two_sided": 0.6194
+    },
+    "grace+e2 - grace_audio_on": {
+     "mean": 0.2,
+     "sd": 0.17,
+     "per_seed": [
+      0.31,
+      0.07,
+      0.36,
+      0.31,
+      -0.03
+     ],
+     "n_pos": 4,
+     "ci95": [
+      -0.08,
+      0.48
+     ],
+     "p_two_sided": 0.157
+    },
+    "dual_online+e2 - grace+e2": {
+     "mean": -0.0,
+     "sd": 0.32,
+     "per_seed": [
+      0.1,
+      -0.5,
+      -0.04,
+      0.06,
+      0.37
+     ],
+     "n_pos": 3,
+     "ci95": [
+      -0.84,
+      0.84
+     ],
+     "p_two_sided": 0.9902
+    }
+   },
+   "e2_rescue_on_grace_errors": 29.69
+  }
+ },
+ "provenance": [
+  {
+   "dump": "R20261022-321",
+   "train": "R20261022-306",
+   "seed": 123,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-323",
+   "train": "R20261022-307",
+   "seed": 42,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-325",
+   "train": "R20261022-308",
+   "seed": 3047,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-327",
+   "train": "R20261022-309",
+   "seed": 7,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-329",
+   "train": "R20261022-310",
+   "seed": 2026,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-322",
+   "train": "R20261022-306",
+   "seed": 123,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-324",
+   "train": "R20261022-307",
+   "seed": 42,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-326",
+   "train": "R20261022-308",
+   "seed": 3047,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-328",
+   "train": "R20261022-309",
+   "seed": 7,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-330",
+   "train": "R20261022-310",
+   "seed": 2026,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-311",
+   "train": "R20261022-301",
+   "seed": 123,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-313",
+   "train": "R20261022-302",
+   "seed": 42,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-315",
+   "train": "R20261022-303",
+   "seed": 3047,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-317",
+   "train": "R20261022-304",
+   "seed": 7,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-319",
+   "train": "R20261022-305",
+   "seed": 2026,
+   "split": "dev"
+  },
+  {
+   "dump": "R20261022-312",
+   "train": "R20261022-301",
+   "seed": 123,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-314",
+   "train": "R20261022-302",
+   "seed": 42,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-316",
+   "train": "R20261022-303",
+   "seed": 3047,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-318",
+   "train": "R20261022-304",
+   "seed": 7,
+   "split": "test"
+  },
+  {
+   "dump": "R20261022-320",
+   "train": "R20261022-305",
+   "seed": 2026,
+   "split": "test"
+  }
+ ]
+}

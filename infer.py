@@ -58,6 +58,25 @@ def load_model_and_tokenizer(for_training=False):
     return model, tokenizer, processor
 
 
+# Set by --fast_eval (run_v1.py). Off by default; see fast_scoring.py.
+FAST_SCORING = False
+
+
+def _pred_from_avg_logps(avg_logps, spec, return_scores):
+    """Tail of score_candidates, shared with the fast path (same arithmetic)."""
+    avg_logps = np.array(avg_logps)
+    pred_idx = int(avg_logps.argmax())
+    pred_label_id = spec.label2id[spec.label_list[pred_idx]]
+    if return_scores:
+        probs = np.exp(avg_logps - avg_logps.max())
+        probs = probs / probs.sum()
+        score_by_id = np.zeros(spec.num_classes)
+        for i, lab in enumerate(spec.label_list):
+            score_by_id[spec.label2id[lab]] = probs[i]
+        return pred_label_id, score_by_id
+    return pred_label_id
+
+
 def _build_candidate_token_ids(tokenizer, messages, spec=None):
     """返回 (prompt_ids, list[(label, answer_token_ids)])。
     answer_token_ids = 该情感词在 chat 模板里紧跟 assistant 前缀的真实 token 序列（已剥尾部特殊token）。"""
@@ -87,6 +106,11 @@ def score_candidates(model, tokenizer, messages, return_scores=False, spec=None)
     spec = _resolve_spec(spec)
     prompt_ids, cands = _build_candidate_token_ids(tokenizer, messages, spec=spec)
     device = model.device
+
+    if FAST_SCORING:
+        from fast_scoring import candidate_avg_logps
+        return _pred_from_avg_logps(
+            candidate_avg_logps(model, prompt_ids, cands, device), spec, return_scores)
 
     avg_logps = []
     for lab, ans in cands:

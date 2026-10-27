@@ -1,0 +1,1 @@
+--dataset meld --meld_audio --split dev --n_blocks 2 --n_prev_turns 1 --no_frame_attn --fast_eval --ctx 16 --conditions clean drop --checkpoint outputs/runs/R20261022-305/pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s2026_ctx16_maudio_last --out_dir outputs/runs/R20261022-319/eval

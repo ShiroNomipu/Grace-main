@@ -1,0 +1,61 @@
+{
+ "expert": "e1",
+ "dataset": "iemocap",
+ "seed": 42,
+ "smoke": false,
+ "select": "last",
+ "chosen_epoch": 29,
+ "epochs": 30,
+ "batch": 32,
+ "enc_lr": null,
+ "head_lr": 0.001,
+ "weight_decay": 0.01,
+ "clip": 1.0,
+ "warmup": 0.1,
+ "max_sec": 15.0,
+ "n": {
+  "train": 5163,
+  "dev": 647,
+  "test": 1623
+ },
+ "input_report": {
+  "train": {
+   "missing_features": 0,
+   "frames": 64
+  },
+  "dev": {
+   "missing_features": 0,
+   "frames": 64
+  },
+  "test": {
+   "missing_features": 0,
+   "frames": 64
+  }
+ },
+ "peak_mem_mb": 32.5,
+ "sec_per_step": 1.0776,
+ "checkpoint": "head.pt",
+ "sha256_checkpoint": "6c4dd49430b2c1ed2007e8d2ce40e454b4c4a2cd5d9f7669734f5d75c31cf670",
+ "sha256_script": "449e09afb79cb768015b7a897abada36263c30ec8a6ddc4e0a11f408b35b9288",
+ "label_list": [
+  "ang",
+  "exc",
+  "fru",
+  "hap",
+  "neu",
+  "sad"
+ ],
+ "wavlm_sha256_pytorch_model": null,
+ "results": {
+  "dev": {
+   "weighted_f1": 48.734,
+   "accuracy": 49.768,
+   "n": 647
+  },
+  "test": {
+   "weighted_f1": 51.628,
+   "accuracy": 52.372,
+   "n": 1623
+  }
+ }
+}

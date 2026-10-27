@@ -1,0 +1,1 @@
+--dataset meld --meld_audio --n_prev_turns 1 --n_blocks 2 --no_frame_attn --modality_dropout 0.3 --mdrop_consistent --adapter_lr 8e-5 --adapter_wd 0.05 --cosine --focal_loss --focal_gamma 0.5 --epochs 3 --seed 7 --fast_eval --eval_last --ctx 16

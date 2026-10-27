@@ -1,0 +1,41 @@
+{
+ "src": "R20261022-124",
+ "args": {
+  "src": "R20261022-124",
+  "out_dir": "outputs/runs/R20261025-09/eval",
+  "limit": 0,
+  "mode": "full",
+  "split": "test",
+  "which": "best"
+ },
+ "src_args": {
+  "--dataset": "meld",
+  "--epochs": "3",
+  "--focal_gamma": "0.5",
+  "--seed": "7",
+  "--ctx": "16",
+  "--future_mode": "dual",
+  "--future_k": "2",
+  "--future_pdrop": "0.5",
+  "--tag": "lock_meld_dual_c16_s7"
+ },
+ "adapter": "outputs/runs/R20261022-124/lock_meld_dual_c16_s7_lora_best",
+ "n": 2610,
+ "label_list": [
+  "neutral",
+  "joy",
+  "sadness",
+  "anger",
+  "surprise",
+  "fear",
+  "disgust"
+ ],
+ "weighted_f1": 0.679669252259744,
+ "which": "best",
+ "ref_weighted_f1": 0.679669252259744,
+ "elapsed_sec": 627.1,
+ "sha256": {
+  "script": "de6b777e351c47b19f3162fe19d80feb0dbf25e763fc6cbca98f2e28980d2184",
+  "adapter_model.safetensors": "68d1a641b52e15d5a02f8f1dda9e6cad522d631858e48e90c7782e5e325633c2"
+ }
+}

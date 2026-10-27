@@ -1,0 +1,62 @@
+{
+ "expert": "e1",
+ "dataset": "meld",
+ "seed": 3047,
+ "smoke": false,
+ "select": "best",
+ "chosen_epoch": 25,
+ "epochs": 30,
+ "batch": 32,
+ "enc_lr": null,
+ "head_lr": 0.001,
+ "weight_decay": 0.01,
+ "clip": 1.0,
+ "warmup": 0.1,
+ "max_sec": 15.0,
+ "n": {
+  "train": 9989,
+  "dev": 1109,
+  "test": 2610
+ },
+ "input_report": {
+  "train": {
+   "missing_features": 0,
+   "frames": 64
+  },
+  "dev": {
+   "missing_features": 0,
+   "frames": 64
+  },
+  "test": {
+   "missing_features": 0,
+   "frames": 64
+  }
+ },
+ "peak_mem_mb": 32.5,
+ "sec_per_step": 0.0061,
+ "checkpoint": "head.pt",
+ "sha256_checkpoint": "1f232173feb62bc3c431eccb5fed1155aec7a0c0f521a50ab17a2462fe834c78",
+ "sha256_script": "cbf7ba8ae314918951fdf1e5b1b21c9141c7d7bd157303864ff4e0a67fe6849e",
+ "label_list": [
+  "neutral",
+  "joy",
+  "sadness",
+  "anger",
+  "surprise",
+  "fear",
+  "disgust"
+ ],
+ "wavlm_sha256_pytorch_model": null,
+ "results": {
+  "dev": {
+   "weighted_f1": 34.08,
+   "accuracy": 42.2,
+   "n": 1109
+  },
+  "test": {
+   "weighted_f1": 42.434,
+   "accuracy": 49.923,
+   "n": 2610
+  }
+ }
+}

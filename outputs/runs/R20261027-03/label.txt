@@ -1,0 +1,1 @@
+dev checks b: offline mode per dialogue type (CPU)

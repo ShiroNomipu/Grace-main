@@ -1,0 +1,181 @@
+{
+ "model_path": "/root/autodl-tmp/grace/models/Qwen2.5-7B-Instruct",
+ "max_seq_len": 1024,
+ "iemocap_train": {
+  "n": 5163,
+  "n_dialogues": 108,
+  "n_future": {
+   "0": 108,
+   "1": 108,
+   "2": 4947
+  },
+  "labels": {
+   "0": 831,
+   "1": 593,
+   "2": 1296,
+   "3": 451,
+   "4": 1221,
+   "5": 771
+  },
+  "len_online": {
+   "median": 366,
+   "p99": 593,
+   "max": 797,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 397,
+   "p99": 653,
+   "max": 881,
+   "over_max_seq_len": 0
+  }
+ },
+ "iemocap_dev": {
+  "n": 647,
+  "n_dialogues": 12,
+  "n_future": {
+   "0": 12,
+   "1": 12,
+   "2": 623
+  },
+  "labels": {
+   "0": 102,
+   "1": 149,
+   "2": 172,
+   "3": 53,
+   "4": 103,
+   "5": 68
+  },
+  "len_online": {
+   "median": 354,
+   "p99": 580,
+   "max": 633,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 386,
+   "p99": 636,
+   "max": 681,
+   "over_max_seq_len": 0
+  }
+ },
+ "iemocap_test": {
+  "n": 1623,
+  "n_dialogues": 31,
+  "n_future": {
+   "0": 31,
+   "1": 31,
+   "2": 1561
+  },
+  "labels": {
+   "0": 170,
+   "1": 299,
+   "2": 381,
+   "3": 144,
+   "4": 384,
+   "5": 245
+  },
+  "len_online": {
+   "median": 383,
+   "p99": 634,
+   "max": 707,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 418,
+   "p99": 703,
+   "max": 763,
+   "over_max_seq_len": 0
+  }
+ },
+ "meld_train": {
+  "n": 9989,
+  "n_dialogues": 1038,
+  "n_future": {
+   "0": 1038,
+   "1": 968,
+   "2": 7983
+  },
+  "labels": {
+   "0": 4710,
+   "1": 1743,
+   "2": 683,
+   "3": 1109,
+   "4": 1205,
+   "5": 268,
+   "6": 271
+  },
+  "len_online": {
+   "median": 197,
+   "p99": 414,
+   "max": 509,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 223,
+   "p99": 438,
+   "max": 545,
+   "over_max_seq_len": 0
+  }
+ },
+ "meld_dev": {
+  "n": 1109,
+  "n_dialogues": 114,
+  "n_future": {
+   "0": 114,
+   "1": 108,
+   "2": 887
+  },
+  "labels": {
+   "0": 470,
+   "1": 163,
+   "2": 111,
+   "3": 153,
+   "4": 150,
+   "5": 40,
+   "6": 22
+  },
+  "len_online": {
+   "median": 194,
+   "p99": 389,
+   "max": 420,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 220,
+   "p99": 413,
+   "max": 449,
+   "over_max_seq_len": 0
+  }
+ },
+ "meld_test": {
+  "n": 2610,
+  "n_dialogues": 280,
+  "n_future": {
+   "0": 280,
+   "1": 268,
+   "2": 2062
+  },
+  "labels": {
+   "0": 1256,
+   "1": 402,
+   "2": 208,
+   "3": 345,
+   "4": 281,
+   "5": 50,
+   "6": 68
+  },
+  "len_online": {
+   "median": 195,
+   "p99": 408,
+   "max": 474,
+   "over_max_seq_len": 0
+  },
+  "len_full": {
+   "median": 221,
+   "p99": 438,
+   "max": 507,
+   "over_max_seq_len": 0
+  }
+ }
+}

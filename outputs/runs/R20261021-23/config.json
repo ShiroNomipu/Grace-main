@@ -1,0 +1,61 @@
+{
+ "expert": "e2",
+ "dataset": "iemocap",
+ "seed": 3047,
+ "smoke": false,
+ "select": "last",
+ "chosen_epoch": 7,
+ "epochs": 8,
+ "batch": 8,
+ "enc_lr": 3e-05,
+ "head_lr": 0.001,
+ "weight_decay": 0.01,
+ "clip": 1.0,
+ "warmup": 0.1,
+ "max_sec": 15.0,
+ "n": {
+  "train": 5163,
+  "dev": 647,
+  "test": 1623
+ },
+ "input_report": {
+  "train": {
+   "truncated_at_15s": 60,
+   "n": 5163
+  },
+  "dev": {
+   "truncated_at_15s": 0,
+   "n": 647
+  },
+  "test": {
+   "truncated_at_15s": 32,
+   "n": 1623
+  }
+ },
+ "peak_mem_mb": 6228.7,
+ "sec_per_step": 0.3028,
+ "checkpoint": "expert_bf16.pt",
+ "sha256_checkpoint": "36cf6168ee5585e31df4177fdf3cfea600c6f9350b524f7029ec42688435e6eb",
+ "sha256_script": "449e09afb79cb768015b7a897abada36263c30ec8a6ddc4e0a11f408b35b9288",
+ "label_list": [
+  "ang",
+  "exc",
+  "fru",
+  "hap",
+  "neu",
+  "sad"
+ ],
+ "wavlm_sha256_pytorch_model": "3bb273a6ace99408b50cfc81afdbb7ef2de02da2eab0234e18db608ce692fe51",
+ "results": {
+  "dev": {
+   "weighted_f1": 52.912,
+   "accuracy": 52.859,
+   "n": 647
+  },
+  "test": {
+   "weighted_f1": 53.299,
+   "accuracy": 53.666,
+   "n": 1623
+  }
+ }
+}

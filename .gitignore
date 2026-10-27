@@ -1,14 +1,15 @@
-# Nothing derived from the corpora may be published: the IEMOCAP licence
-# forbids passing on the data or derivatives of it.
+# Corpora, features and weights are never published (IEMOCAP licence; size).
 *.pkl
 *.npy
 *.pt
+*.bin
 *.safetensors
 *.wav
 *.mp4
 *.csv
 datasets/
-outputs/
 models/
+out/
+runs/iemocap_align_20261018.json
 __pycache__/
 *.pyc

@@ -1,0 +1,1 @@
+--dataset meld --epochs 3 --cosine --focal_gamma 0.5 --seed 42 --fast_eval --eval_last --ctx 16 --future_mode dual --future_k 2 --future_pdrop 0.5 --tag lock_meld_dual_c16_s42

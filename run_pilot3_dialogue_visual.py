@@ -15,6 +15,7 @@ from dataset_spec import get_spec
 from infer import (load_model_and_tokenizer, _build_candidate_token_ids,
                    compute_metrics, print_metrics)
 from run_v1 import seed_all, build_train_example, collate_batch, setup_lora
+import soft_label  # candidate A (2026-10-19): soft-label auxiliary loss, inactive unless --soft_file
 
 # ─── Config ───
 # Default is Qwen2-VL-2B's language tower (28 layers, width 1536). Both are
@@ -88,6 +89,11 @@ class GatedCrossAttnBlock(nn.Module):
         self.emotion_anchor = emotion_anchor
         self.check_ortho = False  # toggled True during sanity to run assertion
         self.norm1 = nn.LayerNorm(dim)
+        if dim % n_heads != 0:
+            # 7B-class widths (e.g. 3584) are not divisible by 12; keep 128-d heads.
+            # 1536 and 3072 are divisible by 12, so their head count is unchanged.
+            assert dim % 128 == 0, f"adapter width {dim} divisible by neither {n_heads} nor 128"
+            n_heads = dim // 128
         self.cross_attn = nn.MultiheadAttention(
             embed_dim=dim, num_heads=n_heads, batch_first=True)
         # gate_attn doubles as the orthogonal-component gate (perp) under DDG
@@ -200,6 +206,11 @@ class DialogueVisualAdapter(nn.Module):
             for _ in range(n_blocks)])
         self.turn_pos_embed = nn.Embedding(max_turns, dim)
         self._raw_turn_feats = None  # list of detached tensors (no graph)
+        # 2026-10-21 --mdrop_consistent: one modality-dropout draw per block and batch, made in set_visual and
+        # reused by every call for that block, so checkpoint recomputation sees the forward pass's mask.
+        self.mdrop_consistent = False
+        self._mdrop_cache = None
+        self._cur_block = None
 
     def set_visual(self, turn_feats_list):
         """Store raw (detached) turn features; projection recomputed in hook.
@@ -209,6 +220,11 @@ class DialogueVisualAdapter(nn.Module):
                 ordered oldest-turn-first, target-turn-last.
         """
         self._raw_turn_feats = [f.detach() for f in turn_feats_list]
+        if self.mdrop_consistent and self.training and self.modality_dropout > 0:
+            assert self.dialogue_dropout == 0, "--mdrop_consistent covers modality dropout only"
+            self._mdrop_cache = [random.random() < self.modality_dropout for _ in range(len(self.blocks))]
+        else:
+            self._mdrop_cache = None
 
     def compute_visual_tokens(self):
         """Recompute projection from raw feats (gradient checkpoint safe).
@@ -220,8 +236,12 @@ class DialogueVisualAdapter(nn.Module):
             return None
 
         # Modality dropout: zero-out ALL visual with probability p
-        if (self.training and self.modality_dropout > 0
-                and random.random() < self.modality_dropout):
+        if self._mdrop_cache is not None and self._cur_block is not None:
+            drop = self.training and self._mdrop_cache[self._cur_block]
+        else:   # legacy path, unchanged: one draw per call
+            drop = (self.training and self.modality_dropout > 0
+                    and random.random() < self.modality_dropout)
+        if drop:
             B = self._raw_turn_feats[0].shape[0]
             n_total_frames = sum(f.shape[1] for f in self._raw_turn_feats)
             dim = self.proj.out_features
@@ -397,7 +417,7 @@ def install_hooks(model, visual_adapter, insert_layers):
     for block_idx, layer_idx in enumerate(insert_layers):
         block = visual_adapter.get_block(block_idx)
 
-        def make_hook(blk):
+        def make_hook(blk, bidx):
             def hook_fn(module, input, output):
                 # Qwen2VLDecoderLayer returns a tuple; LlamaDecoderLayer in
                 # transformers >= 4.54 returns the hidden states bare. The hook
@@ -405,6 +425,7 @@ def install_hooks(model, visual_adapter, insert_layers):
                 # layer's norm receives a tuple.
                 is_tuple = isinstance(output, tuple)
                 hidden = output[0] if is_tuple else output
+                visual_adapter._cur_block = bidx
                 v_tokens = visual_adapter.compute_visual_tokens()
                 if v_tokens is None:
                     return output
@@ -412,7 +433,7 @@ def install_hooks(model, visual_adapter, insert_layers):
                 return (modified,) + output[1:] if is_tuple else modified
             return hook_fn
 
-        h = layers[layer_idx].register_forward_hook(make_hook(block))
+        h = layers[layer_idx].register_forward_hook(make_hook(block, block_idx))
         handles.append(h)
 
     return handles
@@ -486,6 +507,10 @@ def _collate_dialogue_feats(samples, feat_map, device, n_prev, n_frames):
 
 
 # ─── Evaluation ───
+# Set by --fast_eval. Off by default; see fast_scoring.py.
+FAST_EVAL = False
+
+
 @torch.no_grad()
 def score_candidates(model, adapter, tokenizer, messages, turn_feats_list,
                      device, spec):
@@ -495,6 +520,13 @@ def score_candidates(model, adapter, tokenizer, messages, turn_feats_list,
     vis_list = [torch.tensor(f[None], device=device, dtype=torch.float32)
                 for f in turn_feats_list]
     adapter.set_visual(vis_list)
+
+    if FAST_EVAL:
+        from fast_scoring import candidate_avg_logps
+        avg_logps = candidate_avg_logps(
+            model, prompt_ids, cands, device,
+            on_batch=lambda n: adapter.set_visual([v.expand(n, -1, -1) for v in vis_list]))
+        return spec.label2id[spec.label_list[int(np.argmax(avg_logps))]]
 
     avg_logps = []
     for lab, ans in cands:
@@ -525,10 +557,16 @@ def evaluate(model, adapter, tokenizer, samples, feat_map, spec, n_frames, desc=
 
 
 # ─── Training ───
+def _lora_checksum(model):
+    """Sum of |LoRA weights|; logged under --eval_last to show load_adapter swapped weights."""
+    return float(sum(p.detach().float().abs().sum().item()
+                     for n, p in model.named_parameters() if "lora_" in n))
+
+
 def train_full(model, adapter, tokenizer, D, spec, tag="pilot3",
                epochs_override=None, adapter_lr=None, adapter_wd=0.0,
                use_cosine=False, modality="visual", n_frames=N_FRAMES_VISUAL,
-               focal_gamma=0.0, gate_lr=None):
+               focal_gamma=0.0, gate_lr=None, save_last=False):
     from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
     device = model.device
     n_epochs = epochs_override if epochs_override is not None else C.EPOCHS
@@ -540,6 +578,9 @@ def train_full(model, adapter, tokenizer, D, spec, tag="pilot3",
     print(f"feat_tr keys: {len(feat_tr)}, feat_dv keys: {len(feat_dv)}")
 
     examples = [build_train_example(tokenizer, s) for s in train_data]
+    if soft_label.PATH:
+        soft_label.setup(tokenizer, spec, train_data, examples,
+                         log_path=os.path.join(C.OUTPUT_DIR, f"{tag}_soft_loss.json"))
 
     n_batches = len(examples) // C.BATCH_SIZE
     total_steps = (n_batches // C.GRAD_ACCUM) * n_epochs
@@ -581,6 +622,8 @@ def train_full(model, adapter, tokenizer, D, spec, tag="pilot3",
     indices = list(range(len(examples)))
     for epoch in range(n_epochs):
         random.shuffle(indices)
+        if soft_label.CURRICULUM:   # round 2: easy-to-hard within the epoch; ties keep the shuffle
+            soft_label.curriculum_sort(indices)
         model.train(); adapter.train()
         epoch_loss, n_steps = 0.0, 0
         opt.zero_grad()
@@ -611,6 +654,8 @@ def train_full(model, adapter, tokenizer, D, spec, tag="pilot3",
                 raw_loss = (focal_weight * ce).sum() / n_valid
             else:
                 raw_loss = out.loss
+            if soft_label.PATH:   # candidate A: + LAMBDA * L_soft on the first answer token
+                raw_loss = raw_loss + soft_label.loss(bi, logits=out.logits)
 
             loss = raw_loss / C.GRAD_ACCUM
             loss.backward()
@@ -649,6 +694,12 @@ def train_full(model, adapter, tokenizer, D, spec, tag="pilot3",
                        os.path.join(best_dir, "visual_adapter.pt"))
             print(f"  >> new best dev wf1={dev_f1:.4f}, saved to {best_dir}")
 
+    if save_last:   # --eval_last: keep the final (last-epoch) weights as well
+        last_dir = os.path.join(C.OUTPUT_DIR, f"{tag}_last")
+        os.makedirs(last_dir, exist_ok=True)
+        model.save_pretrained(last_dir)
+        torch.save(adapter.state_dict(), os.path.join(last_dir, "visual_adapter.pt"))
+        print(f"  >> last-epoch weights saved to {last_dir}")
     print(f"\nTraining done. Best dev wf1 = {best_dev_f1:.4f}")
     return best_dir
 
@@ -658,6 +709,12 @@ def main():
     parser.add_argument("--dataset", default="meld", choices=["iemocap", "meld"])
     parser.add_argument("--small", type=int, default=0,
                         help="Subset size for quick test (0=full)")
+    parser.add_argument("--cue_file", default=None,
+                        help="H2: JSON of verbalised acoustic cues (cue_text.py); off by default")
+    parser.add_argument("--soft_file", default=None,
+                        help="candidate A: JSON of annotator-vote soft targets (soft_label.py); off by default")
+    parser.add_argument("--curriculum", action="store_true",
+                        help="candidate A round 2: easy-to-hard order by soft-target entropy within each epoch; needs --soft_file")
     parser.add_argument("--n_prev_turns", type=int, default=N_PREV_TURNS,
                         help="Number of previous turns for dialogue context")
     parser.add_argument("--no_frame_attn", action="store_true",
@@ -670,6 +727,9 @@ def main():
                         help="Override C.EPOCHS (for quick experiments)")
     parser.add_argument("--dialogue_dropout", type=float, default=0.0,
                         help="Prob of zeroing prev turn features during training")
+    parser.add_argument("--mdrop_consistent", action="store_true",
+                        help="2026-10-21: one modality-dropout draw per block and batch, reused when gradient "
+                             "checkpointing recomputes the block (fixes the forward/backward mask mismatch)")
     parser.add_argument("--modality_dropout", type=float, default=0.0,
                         help="Prob of zeroing ALL modality features during training")
     parser.add_argument("--feat_noise", type=float, default=0.0,
@@ -707,12 +767,26 @@ def main():
                         help="EAS: restrict the orthogonal injection to the emotion-label embedding subspace (implies --direction_decomp)")
     parser.add_argument("--modality_target_only", action="store_true",
                         help="inject the target utterance's features only and leave the context slot zero, as IEMOCAP runs did before context_feat_keys existed")
+    parser.add_argument("--ctx", type=int, default=None,
+                        help="text context window in utterances, target included (default config CONTEXT_WINDOW); same meaning as run_v1.py --ctx")
+    parser.add_argument("--meld_audio", action="store_true",
+                        help="MELD only: emotion2vec frame features (64 frames) instead of visual")
+    parser.add_argument("--lr_scale", type=float, default=1.0,
+                        help="scale LoRA lr (config LR) and --adapter_lr together; applied after the sanity check")
+    parser.add_argument("--fast_eval", action="store_true",
+                        help="prefix-cached batched candidate scoring (fast_scoring.py)")
+    parser.add_argument("--eval_last", action="store_true",
+                        help="also save the last-epoch weights and evaluate them on test (<tag>_test_last_metrics.json)")
     args = parser.parse_args()
+    assert not (args.meld_audio and args.dataset != "meld"), "--meld_audio is MELD-only"
+    assert not (args.meld_audio and args.dual_modality), "--meld_audio excludes --dual_modality"
     if args.emotion_anchor:
         args.direction_decomp = True
 
     global MODALITY_TARGET_ONLY
     MODALITY_TARGET_ONLY = args.modality_target_only
+    global FAST_EVAL
+    FAST_EVAL = args.fast_eval
 
     n_prev_turns = args.n_prev_turns
 
@@ -720,7 +794,7 @@ def main():
     if args.dual_modality and args.dataset == "meld":
         modality = "dual"
         n_frames = N_FRAMES_AUDIO + N_FRAMES_VISUAL  # 64 + 8 = 72
-    elif args.dataset == "iemocap":
+    elif args.dataset == "iemocap" or args.meld_audio:
         modality = "audio"
         n_frames = N_FRAMES_AUDIO
     else:
@@ -747,10 +821,18 @@ def main():
         tag += f"_ddrop{int(args.dialogue_dropout*100)}"
     if args.modality_dropout > 0:
         tag += f"_mdrop{int(args.modality_dropout*100)}"
+        if args.mdrop_consistent:
+            tag += "c"
     if args.feat_noise > 0:
         tag += f"_fnoise{args.feat_noise}"
     if args.gate_init is not None:
         tag += f"_ginit{args.gate_init}"
+    if args.cue_file:
+        tag += "_cue"
+    if args.soft_file:
+        tag += "_soft"
+    if args.curriculum:
+        tag += "_cur"
     if args.no_gating:
         tag += "_nogating"
     if args.gate_mode != "tanh":
@@ -774,6 +856,12 @@ def main():
         tag += "_persona"
     if args.seed is not None:
         tag += f"_s{args.seed}"
+    if args.ctx is not None:
+        tag += f"_ctx{args.ctx}"
+    if args.meld_audio:
+        tag += "_maudio"
+    if args.lr_scale != 1.0:
+        tag += f"_lrx{args.lr_scale:g}"
     print(f"=== Pilot-3: Dialogue Modality Adapter [{args.dataset}] ===")
     print(f"  backbone: {bb['model_type']} | {bb['num_hidden_layers']} layers "
           f"| width {hidden_dim} | {os.path.basename(os.path.normpath(C.MODEL_PATH))}")
@@ -791,6 +879,8 @@ def main():
     print(f"  persona: {args.persona}")
     print(f"  seed: {run_seed}")
     print(f"  tag: {tag}")
+    print(f"  ctx: {args.ctx if args.ctx is not None else C.CONTEXT_WINDOW}, "
+          f"lr_scale: {args.lr_scale:g}, fast_eval: {args.fast_eval}")
 
     # Load model
     model, tokenizer, _ = load_model_and_tokenizer(for_training=True)
@@ -818,6 +908,8 @@ def main():
         emo_k=spec.num_classes if args.emotion_anchor else 0,
         gate_mode=args.gate_mode,
     ).to(device).float()
+    adapter.mdrop_consistent = args.mdrop_consistent
+    print(f"  mdrop_consistent: {args.mdrop_consistent}")
     if args.emotion_anchor:
         emo_Q = build_emotion_basis(model, tokenizer, spec, device)
         adapter.set_emotion_basis(emo_Q)
@@ -834,6 +926,17 @@ def main():
     if use_persona:
         import functools
         D.load_split = functools.partial(_orig_load, use_persona=True)
+    if args.ctx is not None:
+        import functools
+        D.load_split = functools.partial(D.load_split, context_window=args.ctx)
+    if args.cue_file:
+        import cue_text  # H2 (2026-10-18): verbalised acoustic cue appended to the target utterance
+        D.load_split = cue_text.wrap_load_split(D.load_split, args.cue_file)
+    if args.soft_file:
+        soft_label.PATH = args.soft_file
+    if args.curriculum:
+        assert args.soft_file, "--curriculum needs --soft_file"
+        soft_label.CURRICULUM = True
 
     # Load modality features for sanity check
     train_data = D.load_split("train")
@@ -843,6 +946,12 @@ def main():
     if not args.skip_sanity:
         tiny_overfit_sanity(model, adapter, tokenizer, train_data, feat_tr, spec,
                             n_frames)
+
+    if args.lr_scale != 1.0:
+        C.LR = C.LR * args.lr_scale
+        if args.adapter_lr is not None:
+            args.adapter_lr = args.adapter_lr * args.lr_scale
+        print(f"[lr_scale] x{args.lr_scale:g}: LoRA lr={C.LR:g}, adapter_lr={args.adapter_lr}")
 
     # Train
     if args.small:
@@ -855,7 +964,7 @@ def main():
                               use_cosine=args.cosine,
                               modality=modality, n_frames=n_frames,
                               focal_gamma=args.focal_gamma if args.focal_loss else 0.0,
-                              gate_lr=args.gate_lr)
+                              gate_lr=args.gate_lr, save_last=args.eval_last)
     else:
         best_dir = train_full(model, adapter, tokenizer, D, spec,
                               tag=tag, epochs_override=args.epochs,
@@ -863,7 +972,7 @@ def main():
                               use_cosine=args.cosine,
                               modality=modality, n_frames=n_frames,
                               focal_gamma=args.focal_gamma if args.focal_loss else 0.0,
-                              gate_lr=args.gate_lr)
+                              gate_lr=args.gate_lr, save_last=args.eval_last)
 
     # Final test
     if not args.skip_test:
@@ -872,10 +981,26 @@ def main():
         feat_te = load_modality_feats(spec, "test", modality)
 
         from peft import PeftModel
+        if args.eval_last:
+            last_dir = os.path.join(C.OUTPUT_DIR, f"{tag}_last")
+            model.load_adapter(last_dir, adapter_name="default")
+            adapter.load_state_dict(torch.load(os.path.join(last_dir, "visual_adapter.pt"),
+                                               weights_only=False))
+            print(f"[eval_last] lora checksum after loading last: {_lora_checksum(model):.6f}")
+            m_last = evaluate(model, adapter, tokenizer, test_data,
+                              feat_te, spec, n_frames, desc="test-last")
+            print("[eval_last] test metrics, last-epoch weights:")
+            print_metrics(m_last, spec=spec)
+            out_last = os.path.join(C.OUTPUT_DIR, f"{tag}_test_last_metrics.json")
+            with open(out_last, "w") as f:
+                json.dump(m_last, f, indent=2)
+            print(f"[eval_last] saved to {out_last}")
         model.load_adapter(best_dir, adapter_name="default")
         va_state = torch.load(os.path.join(best_dir, "visual_adapter.pt"),
                               weights_only=False)
         adapter.load_state_dict(va_state)
+        if args.eval_last:
+            print(f"[eval_last] lora checksum after loading best: {_lora_checksum(model):.6f}")
 
         metrics = evaluate(model, adapter, tokenizer, test_data,
                            feat_te, spec, n_frames, desc="test")

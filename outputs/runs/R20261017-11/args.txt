@@ -1,0 +1,1 @@
+--dataset iemocap --epochs 3 --cosine --seed 123 --ctx 16 --tag v1_7b_iemocap_s123_ctx16 --fast_eval --eval_last

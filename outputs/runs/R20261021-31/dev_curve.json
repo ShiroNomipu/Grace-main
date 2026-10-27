@@ -1,0 +1,152 @@
+[
+ {
+  "epoch": 0,
+  "dev_wf1": 20.151,
+  "last_loss": 1.8419
+ },
+ {
+  "epoch": 1,
+  "dev_wf1": 34.33,
+  "last_loss": 1.4648
+ },
+ {
+  "epoch": 2,
+  "dev_wf1": 41.458,
+  "last_loss": 1.695
+ },
+ {
+  "epoch": 3,
+  "dev_wf1": 43.558,
+  "last_loss": 1.6482
+ },
+ {
+  "epoch": 4,
+  "dev_wf1": 47.297,
+  "last_loss": 0.8482
+ },
+ {
+  "epoch": 5,
+  "dev_wf1": 46.495,
+  "last_loss": 1.4356
+ },
+ {
+  "epoch": 6,
+  "dev_wf1": 46.448,
+  "last_loss": 1.033
+ },
+ {
+  "epoch": 7,
+  "dev_wf1": 48.194,
+  "last_loss": 1.1782
+ },
+ {
+  "epoch": 8,
+  "dev_wf1": 49.014,
+  "last_loss": 1.0809
+ },
+ {
+  "epoch": 9,
+  "dev_wf1": 47.264,
+  "last_loss": 1.0701
+ },
+ {
+  "epoch": 10,
+  "dev_wf1": 48.824,
+  "last_loss": 1.0117
+ },
+ {
+  "epoch": 11,
+  "dev_wf1": 49.702,
+  "last_loss": 0.9958
+ },
+ {
+  "epoch": 12,
+  "dev_wf1": 49.591,
+  "last_loss": 0.9811
+ },
+ {
+  "epoch": 13,
+  "dev_wf1": 49.805,
+  "last_loss": 1.0887
+ },
+ {
+  "epoch": 14,
+  "dev_wf1": 49.532,
+  "last_loss": 0.9242
+ },
+ {
+  "epoch": 15,
+  "dev_wf1": 51.209,
+  "last_loss": 1.0978
+ },
+ {
+  "epoch": 16,
+  "dev_wf1": 49.279,
+  "last_loss": 0.8369
+ },
+ {
+  "epoch": 17,
+  "dev_wf1": 50.738,
+  "last_loss": 1.301
+ },
+ {
+  "epoch": 18,
+  "dev_wf1": 50.588,
+  "last_loss": 1.1698
+ },
+ {
+  "epoch": 19,
+  "dev_wf1": 50.904,
+  "last_loss": 1.028
+ },
+ {
+  "epoch": 20,
+  "dev_wf1": 50.548,
+  "last_loss": 0.8706
+ },
+ {
+  "epoch": 21,
+  "dev_wf1": 51.333,
+  "last_loss": 0.8916
+ },
+ {
+  "epoch": 22,
+  "dev_wf1": 51.625,
+  "last_loss": 0.9467
+ },
+ {
+  "epoch": 23,
+  "dev_wf1": 50.337,
+  "last_loss": 1.1815
+ },
+ {
+  "epoch": 24,
+  "dev_wf1": 51.121,
+  "last_loss": 0.9292
+ },
+ {
+  "epoch": 25,
+  "dev_wf1": 50.471,
+  "last_loss": 0.8635
+ },
+ {
+  "epoch": 26,
+  "dev_wf1": 51.431,
+  "last_loss": 1.3745
+ },
+ {
+  "epoch": 27,
+  "dev_wf1": 51.552,
+  "last_loss": 1.4387
+ },
+ {
+  "epoch": 28,
+  "dev_wf1": 51.281,
+  "last_loss": 0.9883
+ },
+ {
+  "epoch": 29,
+  "dev_wf1": 51.455,
+  "last_loss": 1.1955
+ }
+]

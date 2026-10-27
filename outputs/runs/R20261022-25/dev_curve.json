@@ -1,0 +1,42 @@
+[
+ {
+  "epoch": 0,
+  "dev_wf1": 26.041,
+  "last_loss": 1.3442
+ },
+ {
+  "epoch": 1,
+  "dev_wf1": 29.173,
+  "last_loss": 1.5333
+ },
+ {
+  "epoch": 2,
+  "dev_wf1": 31.336,
+  "last_loss": 1.1491
+ },
+ {
+  "epoch": 3,
+  "dev_wf1": 32.43,
+  "last_loss": 1.7455
+ },
+ {
+  "epoch": 4,
+  "dev_wf1": 32.496,
+  "last_loss": 1.1514
+ },
+ {
+  "epoch": 5,
+  "dev_wf1": 32.985,
+  "last_loss": 1.3967
+ },
+ {
+  "epoch": 6,
+  "dev_wf1": 32.667,
+  "last_loss": 1.5788
+ },
+ {
+  "epoch": 7,
+  "dev_wf1": 32.908,
+  "last_loss": 1.0901
+ }
+]

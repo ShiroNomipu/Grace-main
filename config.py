@@ -76,7 +76,7 @@ COSMIC_ID2EMO = {0: "hap", 1: "sad", 2: "neu", 3: "ang", 4: "exc", 5: "fru"}
 EXPECTED_COUNTS = {"train": 5163, "dev": 647, "test": 1623}
 
 # ───────── MELD（第二数据集，7类，双集标配；源=MAGTKD 原始 csv+mp4，特征我们自提保纯度）─────────
-MELD_DIR = r"E:\复现库\（可复现ERC）MAGTKD-main\datasets\datasets\MELD"
+MELD_DIR = _env("GRACE_MELD_DIR", r"E:\复现库\（可复现ERC）MAGTKD-main\datasets\datasets\MELD")
 MELD_CSV = {
     "train": os.path.join(MELD_DIR, "train_sent_emo.csv"),
     "dev":   os.path.join(MELD_DIR, "dev_sent_emo.csv"),
@@ -95,8 +95,8 @@ MELD_LABEL2WORD = {lab: lab for lab in MELD_LABEL_LIST}   # MELD 类名本身即
 MELD_NUM_CLASSES = len(MELD_LABEL_LIST)
 # 官方数量锚点（自检用）：train 9989 / dev 1109 / test 2610
 MELD_EXPECTED_COUNTS = {"train": 9989, "dev": 1109, "test": 2610}
-MELD_AUDIO_FEAT_DIR  = r"D:\LLM-ERC\datasets\meld_audio_emotion2vec"        # 句级 768-d
-MELD_AUDIO_FRAME_DIR = r"D:\LLM-ERC\datasets\meld_audio_emotion2vec_frame"  # 帧级序列
+MELD_AUDIO_FEAT_DIR  = os.path.join(_DATA_ROOT, "meld_audio_emotion2vec")        # 句级 768-d
+MELD_AUDIO_FRAME_DIR = os.path.join(_DATA_ROOT, "meld_audio_emotion2vec_frame")  # 帧级序列
 
 # ── MELD 视频（POSTER V2，AffectNet-7 预训练=通用表情库，未碰 MELD 标签 → R5 干净）──
 # 源：MAGTKD 已切好的 8 帧对齐人脸张量 (8,3,224,224) f32（仅裁剪/归一化，无情感微调）。
@@ -109,8 +109,8 @@ MELD_VIDEO_NPY_DIR = {           # 每句 {Dialogue_ID}_{Utterance_ID}.npy → (
     "dev":   os.path.join(_MELD_VPOSTER_ROOT, "dev"),
     "test":  os.path.join(_MELD_VPOSTER_ROOT, "test"),
 }
-MELD_VIDEO_FEAT_DIR  = r"D:\LLM-ERC\datasets\meld_video_poster"        # 句级 768-d（8帧均值）
-MELD_VIDEO_FRAME_DIR = r"D:\LLM-ERC\datasets\meld_video_poster_frame"  # 帧级序列 (N,8,768)
+MELD_VIDEO_FEAT_DIR  = os.path.join(_DATA_ROOT, "meld_video_poster")        # 句级 768-d（8帧均值）
+MELD_VIDEO_FRAME_DIR = os.path.join(_DATA_ROOT, "meld_video_poster_frame")  # 帧级序列 (N,8,768)
 VIDEO_FRAME_LEN      = 8       # POSTER 输入即 8 帧人脸 → 8 帧视频序列（与音频帧级对称）
 
 # ───────────────────────── 数据/Prompt ─────────────────────────

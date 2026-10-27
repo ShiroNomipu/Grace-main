@@ -23,6 +23,9 @@ from tqdm import tqdm
 import config as C
 from dataset_spec import get_spec
 from infer import load_model_and_tokenizer, evaluate, print_metrics
+import soft_label  # candidate A (2026-10-19): soft-label auxiliary loss, inactive unless --soft_file
+import future_ctx  # 2026-10-21: future context / one-model-two-modes (F, DM gates), inactive unless --future_mode
+import future_kd  # 2026-10-21: offline-to-online self-distillation (KD gate), inactive unless --future_kd
 
 
 def seed_all(seed):
@@ -77,6 +80,20 @@ def forward_batch(model, batch, device):
     return out.loss
 
 
+def forward_batch_focal(model, batch, device, gamma):
+    """Focal variant; same computation as run_pilot3_dialogue_visual.train_full."""
+    input_ids, attn, labels = (t.to(device) for t in batch)
+    out = model(input_ids=input_ids, attention_mask=attn, labels=labels)
+    logits = out.logits[:, :-1, :].contiguous().float()
+    tgt = labels[:, 1:].contiguous()
+    ce = torch.nn.functional.cross_entropy(
+        logits.view(-1, logits.size(-1)), tgt.view(-1),
+        ignore_index=-100, reduction='none')
+    pt = torch.exp(-ce.detach()).clamp(min=1e-7, max=1.0)
+    n_valid = (tgt != -100).sum().clamp(min=1)
+    return (((1.0 - pt) ** gamma) * ce).sum() / n_valid
+
+
 def setup_lora(model, rank=None, alpha=None):
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
     model = prepare_model_for_kbit_training(model)
@@ -127,8 +144,10 @@ def tiny_overfit_sanity(model, tokenizer, samples, n=8, steps=60):
     print("[SANITY] PASS: model can learn the task (gradients flow).\n")
 
 
-def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1"):
-    from transformers import get_linear_schedule_with_warmup
+def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1",
+               epochs=None, use_cosine=False, focal_gamma=0.0, save_last=False):
+    from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+    n_epochs = C.EPOCHS if epochs is None else epochs
     device = model.device
     max_len = C.MAX_SEQ_LEN if max_len is None else max_len
     train = D.load_split("train", context_window=ctx)
@@ -136,12 +155,24 @@ def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1"):
     print(f"train={len(train)}  dev={len(dev)}  ctx={ctx or C.CONTEXT_WINDOW} max_len={max_len}")
 
     examples = [build_train_example(tokenizer, s, max_len=max_len) for s in train]
+    if future_ctx.MODE == "dual":
+        assert not soft_label.PATH, "--future_mode dual and --soft_file are not combined"
+    if future_kd.LAMBDA > 0:
+        assert future_ctx.MODE == "dual" and focal_gamma == 0, "--future_kd needs --future_mode dual and no focal loss"
+        future_kd.setup(tokenizer, spec, train, build_train_example, collate_batch, max_len,
+                        log_path=os.path.join(C.OUTPUT_DIR, f"{tag}_kd_loss.json"))
+    if soft_label.PATH:
+        soft_label.setup(tokenizer, spec, train, examples, model=model,
+                         log_path=os.path.join(C.OUTPUT_DIR, f"{tag}_soft_loss.json"))
 
     n_batches = len(examples) // C.BATCH_SIZE
-    total_steps = (n_batches // C.GRAD_ACCUM) * C.EPOCHS
+    total_steps = (n_batches // C.GRAD_ACCUM) * n_epochs
     warmup = int(total_steps * C.WARMUP_RATIO)
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=C.LR)
-    sched = get_linear_schedule_with_warmup(opt, warmup, total_steps)
+    if use_cosine:
+        sched = get_cosine_schedule_with_warmup(opt, warmup, total_steps)
+    else:
+        sched = get_linear_schedule_with_warmup(opt, warmup, total_steps)
 
     best_dev_f1 = -1.0
     best_dir = os.path.join(C.OUTPUT_DIR, f"{tag}_lora_best")
@@ -149,8 +180,13 @@ def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1"):
     loss_log, dev_log = [], []     # 训练曲线落盘（loss / dev-F1）
     global_batch = 0
 
-    for epoch in range(C.EPOCHS):
+    for epoch in range(n_epochs):
         model.train()
+        if future_ctx.MODE == "dual":   # draw, per sample and epoch, whether the future is dropped
+            modes = future_ctx.epoch_messages(train, epoch, future_ctx.SEED)
+            examples = [build_train_example(tokenizer, dict(s, messages=s[f"messages_{m}"]), max_len=max_len)
+                        for s, m in zip(train, modes)]
+            print(f"[future] epoch {epoch}: future dropped for {modes.count('online')}/{len(modes)} samples")
         idxs = list(range(len(examples)))
         random.shuffle(idxs)
         # 切成 batch（丢弃最后不足一个 batch 的尾巴，保持稳定）
@@ -160,7 +196,17 @@ def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1"):
         pbar = tqdm(batches, desc=f"epoch {epoch}")
         for bi, batch_idx in enumerate(pbar):
             batch = collate_batch(tokenizer, [examples[j] for j in batch_idx])
-            raw_loss = forward_batch(model, batch, device)          # 原始 loss（未除梯度累积）
+            if future_kd.LAMBDA > 0:   # KD gate: the CE forward is kept and its logits feed the student side
+                input_ids, attn, labs = (t.to(device) for t in batch)
+                out = model(input_ids=input_ids, attention_mask=attn, labels=labs)
+                raw_loss = out.loss + future_kd.loss(model, out.logits, input_ids, labs, batch_idx, modes, device)
+                del out
+            elif focal_gamma > 0:
+                raw_loss = forward_batch_focal(model, batch, device, focal_gamma)
+            else:
+                raw_loss = forward_batch(model, batch, device)      # 原始 loss（未除梯度累积）
+            if soft_label.PATH:   # candidate A: + LAMBDA * L_soft on the first answer token
+                raw_loss = raw_loss + soft_label.loss(batch_idx)
             (raw_loss / C.GRAD_ACCUM).backward()
             global_batch += 1
             cur_lr = sched.get_last_lr()[0]
@@ -181,6 +227,11 @@ def train_full(model, tokenizer, D, spec, ctx=None, max_len=None, tag="v1"):
             best_dev_f1 = m["weighted_f1"]
             model.save_pretrained(best_dir)
             print(f"  >>> new best dev wf1={best_dev_f1*100:.2f}, saved adapter -> {best_dir}")
+
+    if save_last:   # --eval_last: keep the final (last-epoch) adapter as well
+        last_dir = os.path.join(C.OUTPUT_DIR, f"{tag}_lora_last")
+        model.save_pretrained(last_dir)
+        print(f"  >>> last-epoch adapter saved -> {last_dir}")
 
     # 训练曲线落盘（per-step loss CSV + per-epoch dev JSON）
     import csv as _csv
@@ -207,6 +258,26 @@ def main():
                     help="数据集（iemocap 默认；meld 第二数据集）")
     ap.add_argument("--tag", default=None, help="输出目录/产物前缀（默认 v1 / v1_meld）")
     ap.add_argument("--grad_ckpt", action="store_true", help="梯度检查点（长 ctx/大 rank 治显存）")
+    ap.add_argument("--epochs", type=int, default=None, help="覆盖 C.EPOCHS")
+    ap.add_argument("--cosine", action="store_true", help="cosine 调度（默认线性）")
+    ap.add_argument("--focal_gamma", type=float, default=0.0, help=">0 时用 focal loss")
+    ap.add_argument("--fast_eval", action="store_true",
+                    help="prefix-cached batched candidate scoring (fast_scoring.py)")
+    ap.add_argument("--lr_scale", type=float, default=1.0,
+                    help="scale LoRA lr (config LR); applied after the sanity check")
+    ap.add_argument("--eval_last", action="store_true",
+                    help="also save the last-epoch adapter and evaluate it on test (<tag>_lora_test_last.json)")
+    ap.add_argument("--cue_file", default=None,
+                    help="H2: JSON of verbalised acoustic cues (cue_text.py); off by default")
+    ap.add_argument("--soft_file", default=None,
+                    help="candidate A: JSON of annotator-vote soft targets (soft_label.py); off by default")
+    ap.add_argument("--future_mode", default=None, choices=["online", "full", "dual"],
+                    help="future context (future_ctx.py): online = new template, no future; full = next k turns; "
+                         "dual = one model, future dropped with --future_pdrop; off by default")
+    ap.add_argument("--future_k", type=int, default=2, help="number of future turns (with --future_mode)")
+    ap.add_argument("--future_pdrop", type=float, default=0.5, help="dual mode: probability of dropping the future")
+    ap.add_argument("--future_kd", type=float, default=0.0,
+                    help="dual mode: weight of the offline-to-online self-distillation (future_kd.py); off by default")
     ap.add_argument("--seed", type=int, default=None,
                     help="覆盖 C.SEED；跨骨干对照需与 adapter 侧同种子（123）")
     args = ap.parse_args()
@@ -214,10 +285,24 @@ def main():
     spec = get_spec(args.dataset)
     D = spec.get_data_module()
     tag = args.tag or ("v1" if args.dataset == "iemocap" else f"v1_{args.dataset}")
+    if args.cue_file:
+        import cue_text  # H2 (2026-10-18): verbalised acoustic cue appended to the target utterance
+        D.load_split = cue_text.wrap_load_split(D.load_split, args.cue_file)
+    if args.soft_file:
+        soft_label.PATH = args.soft_file
+    if args.future_mode:
+        assert not args.cue_file, "--future_mode and --cue_file are not combined"
+        future_ctx.MODE, future_ctx.K, future_ctx.P_DROP = args.future_mode, args.future_k, args.future_pdrop
+        D.load_split = future_ctx.wrap_load_split(D.load_split, spec, args.future_mode, args.future_k)
+        print(f"[future] mode={args.future_mode} k={args.future_k} pdrop={args.future_pdrop}")
+    if args.future_kd:
+        assert args.future_mode == "dual", "--future_kd needs --future_mode dual"
+        future_kd.LAMBDA = args.future_kd
 
     os.makedirs(C.OUTPUT_DIR, exist_ok=True)
     run_seed = args.seed if args.seed is not None else C.SEED
     seed_all(run_seed)
+    future_ctx.SEED = run_seed
 
     print(f"Loading {os.path.basename(os.path.normpath(C.MODEL_PATH))} (4-bit QLoRA)... "
           f"[dataset={args.dataset} tag={tag} ctx={args.ctx} seed={run_seed} "
@@ -237,7 +322,17 @@ def main():
         print("sanity_only: stop here.")
         return
 
-    best_dir, best_dev_f1 = train_full(model, tok, D, spec, ctx=args.ctx, max_len=args.max_len, tag=tag)
+    if args.lr_scale != 1.0:
+        C.LR = C.LR * args.lr_scale
+        print(f"[lr_scale] x{args.lr_scale:g}: LoRA lr={C.LR:g}")
+    if args.fast_eval:
+        import infer
+        infer.FAST_SCORING = True
+        print("[eval] fast_eval: prefix-cached batched candidate scoring")
+    print(f"[schedule] epochs={args.epochs or C.EPOCHS} cosine={args.cosine} focal_gamma={args.focal_gamma}")
+    best_dir, best_dev_f1 = train_full(model, tok, D, spec, ctx=args.ctx, max_len=args.max_len, tag=tag,
+                                       epochs=args.epochs, use_cosine=args.cosine,
+                                       focal_gamma=args.focal_gamma, save_last=args.eval_last)
     print(f"\nBest dev wf1 = {best_dev_f1*100:.2f}; best adapter at {best_dir}")
 
     # 用最佳 adapter 在 test 上评估
@@ -252,6 +347,27 @@ def main():
     with open(os.path.join(C.OUTPUT_DIR, f"{tag}_lora_test.json"), "w", encoding="utf-8") as f:
         json.dump(m, f, indent=2, ensure_ascii=False)
     print(f"saved -> {os.path.join(C.OUTPUT_DIR, f'{tag}_lora_test.json')}")
+
+    if args.eval_last:
+        last_dir = os.path.join(C.OUTPUT_DIR, f"{tag}_lora_last")
+        print("\n[eval_last] Reloading last-epoch adapter for test eval...")
+        del model_best, base
+        torch.cuda.empty_cache()
+        base3, tok3, _ = load_model_and_tokenizer(for_training=True)
+        model_last = PeftModel.from_pretrained(base3, last_dir)
+        model_last.eval()
+        m_last = evaluate(model_last, tok3, test, desc=f"{tag} test-last", spec=spec)
+        print_metrics(m_last, title=f"{tag} LoRA last epoch (test)", spec=spec)
+        out_last = os.path.join(C.OUTPUT_DIR, f"{tag}_lora_test_last.json")
+        with open(out_last, "w", encoding="utf-8") as f:
+            json.dump(m_last, f, indent=2, ensure_ascii=False)
+        print(f"saved -> {out_last}")
+        if future_ctx.MODE == "dual":   # the same last-epoch adapter, evaluated in both modes
+            for mode in ("online", "full"):
+                m_mode = evaluate(model_last, tok3, future_ctx.with_mode(test, mode), desc=f"{tag} test-last {mode}", spec=spec)
+                print_metrics(m_mode, title=f"{tag} last epoch, {mode} mode (test)", spec=spec)
+                with open(os.path.join(C.OUTPUT_DIR, f"{tag}_lora_test_last_{mode}.json"), "w", encoding="utf-8") as f:
+                    json.dump(m_mode, f, indent=2, ensure_ascii=False)
 
 
 if __name__ == "__main__":

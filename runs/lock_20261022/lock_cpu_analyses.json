@@ -1,0 +1,512 @@
+{
+ "design": "Completeness analyses on the lock batch, CPU only (2026-10-25; B5 / B3 items of the lock card \u00a79; descriptive,\nwritten after the lock results). Inputs: lock dumps via runs/lock_20261022/lock_runs.json, dev alpha from J2\n(R20261022-211/lock_full.json). Test split, 5 seeds unless noted.\n 1. Where the future helps: future fixes / breaks of the dual model (online -> offline text) grouped by number of future\n    turns available, whether the next turn is by the same speaker, whether the target speaker speaks again within the 2\n    future turns, and (MELD) the number of speakers in the dialogue.\n 2. The price of waiting in seconds: time from the end of the target utterance to the end of the last future turn used\n    (k = 2 labelled turns), IEMOCAP from the alignment file, MELD from the official CSV timestamps; overall and for the\n    20% utterances the online + E2 rule would wait on.\n 3. Confusion matrices (summed over seeds) of dual online, dual offline, dual online + E2.\n 4. Case candidates: IEMOCAP repeated scripted lines (gold differs from the training majority) where the text says the\n    training label and online + E2 is right in >= 4/5 seeds; MELD utterances where E3 turns a wrong text emotion into a\n    right neutral, and where it turns a right text emotion into a wrong neutral (>= 4/5 seeds).\nUsage (repo root): python <this> --out <json>",
+ "iemocap": {
+  "future_by_group": {
+   "n_future=0": {
+    "share_pct": 1.91,
+    "n": 31,
+    "changed_per100": 0.0,
+    "fixes": 0.0,
+    "breaks": 0.0,
+    "net_per100": 0.0
+   },
+   "n_future=1": {
+    "share_pct": 1.91,
+    "n": 31,
+    "changed_per100": 4.52,
+    "fixes": 0.8,
+    "breaks": 0.2,
+    "net_per100": 1.94
+   },
+   "n_future=2": {
+    "share_pct": 96.18,
+    "n": 1561,
+    "changed_per100": 6.42,
+    "fixes": 47.6,
+    "breaks": 37.4,
+    "net_per100": 0.65
+   },
+   "next_turn_same_speaker": {
+    "share_pct": 27.23,
+    "n": 442,
+    "changed_per100": 6.52,
+    "fixes": 10.8,
+    "breaks": 11.6,
+    "net_per100": -0.18
+   },
+   "next_turn_other_speaker": {
+    "share_pct": 70.86,
+    "n": 1150,
+    "changed_per100": 6.33,
+    "fixes": 37.6,
+    "breaks": 26.0,
+    "net_per100": 1.01
+   },
+   "target_speaker_speaks_again_in_2": {
+    "share_pct": 80.47,
+    "n": 1306,
+    "changed_per100": 6.23,
+    "fixes": 37.8,
+    "breaks": 31.4,
+    "net_per100": 0.49
+   },
+   "target_speaker_silent_in_2": {
+    "share_pct": 17.62,
+    "n": 286,
+    "changed_per100": 7.06,
+    "fixes": 10.6,
+    "breaks": 6.2,
+    "net_per100": 1.54
+   }
+  },
+  "wait_seconds": {
+   "all": {
+    "median": 8.29,
+    "p90": 21.14,
+    "mean": 10.37
+   },
+   "waited_20pct_online+e2": {
+    "median": 7.98,
+    "p90": 21.33
+   },
+   "invalid_timestamps": 17
+  },
+  "confusion_sum5": {
+   "dual_online": [
+    [
+     566,
+     0,
+     247,
+     0,
+     30,
+     7
+    ],
+    [
+     6,
+     971,
+     17,
+     207,
+     274,
+     20
+    ],
+    [
+     265,
+     12,
+     1370,
+     2,
+     190,
+     66
+    ],
+    [
+     0,
+     153,
+     0,
+     453,
+     98,
+     16
+    ],
+    [
+     44,
+     45,
+     273,
+     51,
+     1458,
+     49
+    ],
+    [
+     14,
+     1,
+     121,
+     10,
+     86,
+     993
+    ]
+   ],
+   "dual_full": [
+    [
+     566,
+     0,
+     242,
+     0,
+     32,
+     10
+    ],
+    [
+     5,
+     988,
+     15,
+     216,
+     257,
+     14
+    ],
+    [
+     252,
+     10,
+     1391,
+     0,
+     187,
+     65
+    ],
+    [
+     0,
+     154,
+     1,
+     463,
+     91,
+     11
+    ],
+    [
+     43,
+     41,
+     285,
+     58,
+     1452,
+     41
+    ],
+    [
+     14,
+     1,
+     115,
+     16,
+     74,
+     1005
+    ]
+   ],
+   "dual_online+e2": [
+    [
+     510,
+     1,
+     309,
+     0,
+     29,
+     1
+    ],
+    [
+     10,
+     1086,
+     20,
+     145,
+     226,
+     8
+    ],
+    [
+     190,
+     23,
+     1456,
+     1,
+     183,
+     52
+    ],
+    [
+     0,
+     153,
+     5,
+     375,
+     166,
+     21
+    ],
+    [
+     7,
+     8,
+     199,
+     31,
+     1627,
+     48
+    ],
+    [
+     5,
+     0,
+     161,
+     6,
+     77,
+     976
+    ]
+   ]
+  }
+ },
+ "meld": {
+  "future_by_group": {
+   "n_future=0": {
+    "share_pct": 10.73,
+    "n": 280,
+    "changed_per100": 2.07,
+    "fixes": 1.4,
+    "breaks": 2.2,
+    "net_per100": -0.29
+   },
+   "n_future=1": {
+    "share_pct": 10.27,
+    "n": 268,
+    "changed_per100": 3.88,
+    "fixes": 3.8,
+    "breaks": 3.8,
+    "net_per100": 0.0
+   },
+   "n_future=2": {
+    "share_pct": 79.0,
+    "n": 2062,
+    "changed_per100": 4.53,
+    "fixes": 36.4,
+    "breaks": 32.4,
+    "net_per100": 0.19
+   },
+   "next_turn_same_speaker": {
+    "share_pct": 21.65,
+    "n": 565,
+    "changed_per100": 5.38,
+    "fixes": 11.2,
+    "breaks": 10.2,
+    "net_per100": 0.18
+   },
+   "next_turn_other_speaker": {
+    "share_pct": 67.62,
+    "n": 1765,
+    "changed_per100": 4.16,
+    "fixes": 29.0,
+    "breaks": 26.0,
+    "net_per100": 0.17
+   },
+   "target_speaker_speaks_again_in_2": {
+    "share_pct": 58.47,
+    "n": 1526,
+    "changed_per100": 4.61,
+    "fixes": 28.6,
+    "breaks": 23.4,
+    "net_per100": 0.34
+   },
+   "target_speaker_silent_in_2": {
+    "share_pct": 30.8,
+    "n": 804,
+    "changed_per100": 4.15,
+    "fixes": 11.6,
+    "breaks": 12.8,
+    "net_per100": -0.15
+   },
+   "dialogue_2_speakers": {
+    "share_pct": 42.53,
+    "n": 1110,
+    "changed_per100": 4.07,
+    "fixes": 18.4,
+    "breaks": 14.4,
+    "net_per100": 0.36
+   },
+   "dialogue_3plus_speakers": {
+    "share_pct": 57.47,
+    "n": 1500,
+    "changed_per100": 4.29,
+    "fixes": 23.2,
+    "breaks": 24.0,
+    "net_per100": -0.05
+   }
+  },
+  "wait_seconds": {
+   "all": {
+    "median": 6.09,
+    "p90": 13.28,
+    "mean": 9.68
+   },
+   "waited_20pct_online+e2": {
+    "median": 6.09,
+    "p90": 12.6
+   },
+   "invalid_timestamps": 3
+  },
+  "confusion_sum5": {
+   "dual_online": [
+    [
+     5178,
+     376,
+     176,
+     184,
+     243,
+     65,
+     58
+    ],
+    [
+     458,
+     1274,
+     58,
+     57,
+     129,
+     14,
+     20
+    ],
+    [
+     331,
+     71,
+     414,
+     118,
+     57,
+     30,
+     19
+    ],
+    [
+     359,
+     118,
+     111,
+     823,
+     200,
+     37,
+     77
+    ],
+    [
+     155,
+     114,
+     25,
+     120,
+     953,
+     11,
+     27
+    ],
+    [
+     71,
+     18,
+     20,
+     23,
+     37,
+     76,
+     5
+    ],
+    [
+     97,
+     8,
+     21,
+     54,
+     25,
+     3,
+     132
+    ]
+   ],
+   "dual_full": [
+    [
+     5165,
+     389,
+     165,
+     192,
+     246,
+     67,
+     56
+    ],
+    [
+     452,
+     1278,
+     55,
+     55,
+     137,
+     14,
+     19
+    ],
+    [
+     328,
+     71,
+     426,
+     119,
+     57,
+     25,
+     14
+    ],
+    [
+     337,
+     129,
+     121,
+     826,
+     206,
+     39,
+     67
+    ],
+    [
+     147,
+     116,
+     22,
+     118,
+     967,
+     11,
+     24
+    ],
+    [
+     70,
+     18,
+     20,
+     21,
+     38,
+     78,
+     5
+    ],
+    [
+     98,
+     10,
+     21,
+     56,
+     26,
+     3,
+     126
+    ]
+   ],
+   "dual_online+e2": [
+    [
+     5178,
+     376,
+     176,
+     184,
+     243,
+     65,
+     58
+    ],
+    [
+     458,
+     1274,
+     58,
+     57,
+     129,
+     14,
+     20
+    ],
+    [
+     331,
+     71,
+     414,
+     118,
+     57,
+     30,
+     19
+    ],
+    [
+     359,
+     118,
+     111,
+     823,
+     200,
+     37,
+     77
+    ],
+    [
+     155,
+     114,
+     25,
+     120,
+     953,
+     11,
+     27
+    ],
+    [
+     71,
+     18,
+     20,
+     23,
+     37,
+     76,
+     5
+    ],
+    [
+     97,
+     8,
+     21,
+     54,
+     25,
+     3,
+     132
+    ]
+   ]
+  }
+ }
+}

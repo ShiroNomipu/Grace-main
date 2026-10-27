@@ -1,0 +1,605 @@
+{
+ "design": "Dev checks of descriptive test-set patterns before they are written (2026-10-27, CPU only; written after the lock\nresults, descriptive). Version b: section 3 adds the offline mode (text and + E2, dev alpha of dual_full+e2) per subset and\nthe voice-vs-future fix overlap per subset, because the first run (R20261027-02, dev_checks_20261027.py a823ec34) showed\nthe E2 gain on test splitting by dialogue type; nothing else changed. Rule: a test-set pattern enters the paper only after it is checked on dev. Inputs: lock dumps via\nruns/lock_20261022/lock_runs.json, dev alpha from R20261022-211/lock_full.json (the lock judge output).\n 1. future_by_group on dev and test: fixes / breaks of the dual model (online -> offline text) by group; same groups and\n    arithmetic as lock_cpu_analyses_20261025.py section 1 (the test numbers must reproduce that file).\n 2. MELD, dev and test: per-class rescue / harm of each expert against dual online text and the share of neutral\n    predictions; same arithmetic as lock_meld_perclass_20261025.py (the test numbers must reproduce that file).\n 3. IEMOCAP, dev and test, scripted vs improvised dialogues: wF1 of dual online and of dual online + E2 (dev alpha) on each\n    subset, per seed; net fixes of the fusion (text wrong -> fused right minus text right -> fused wrong, mean over\n    seeds) per subset; the number of dialogues whose seed-averaged net fixes are > 0, = 0, < 0.\nUsage (repo root): python <this> --out <json>",
+ "iemocap": {
+  "dev": {
+   "future_by_group": {
+    "n_future=0": {
+     "share_pct": 1.85,
+     "n": 12,
+     "changed_per100": 1.67,
+     "fixes": 0.0,
+     "breaks": 0.2,
+     "net_per100": -1.67
+    },
+    "n_future=1": {
+     "share_pct": 1.85,
+     "n": 12,
+     "changed_per100": 3.33,
+     "fixes": 0.4,
+     "breaks": 0.0,
+     "net_per100": 3.33
+    },
+    "n_future=2": {
+     "share_pct": 96.29,
+     "n": 623,
+     "changed_per100": 8.12,
+     "fixes": 23.2,
+     "breaks": 18.0,
+     "net_per100": 0.83
+    },
+    "next_turn_same_speaker": {
+     "share_pct": 33.23,
+     "n": 215,
+     "changed_per100": 8.09,
+     "fixes": 6.8,
+     "breaks": 6.8,
+     "net_per100": 0.0
+    },
+    "next_turn_other_speaker": {
+     "share_pct": 64.91,
+     "n": 420,
+     "changed_per100": 8.0,
+     "fixes": 16.8,
+     "breaks": 11.2,
+     "net_per100": 1.33
+    },
+    "target_speaker_speaks_again_in_2": {
+     "share_pct": 77.13,
+     "n": 499,
+     "changed_per100": 8.3,
+     "fixes": 18.2,
+     "breaks": 16.0,
+     "net_per100": 0.44
+    },
+    "target_speaker_silent_in_2": {
+     "share_pct": 21.02,
+     "n": 136,
+     "changed_per100": 7.06,
+     "fixes": 5.4,
+     "breaks": 2.0,
+     "net_per100": 2.5
+    }
+   },
+   "script_vs_impro": {
+    "scripted": {
+     "n_utts": 266,
+     "n_dialogues": 5,
+     "text_wf1": 62.92,
+     "fused_wf1": 67.21,
+     "gain_per_seed": [
+      4.09,
+      4.69,
+      6.13,
+      6.0,
+      0.52
+     ],
+     "gain_mean": 4.29,
+     "net_fixes": 12.0,
+     "offline_text_wf1": 63.94,
+     "offline_fused_wf1": 66.6,
+     "future_gain_per_seed": [
+      0.25,
+      2.13,
+      1.63,
+      1.66,
+      -0.58
+     ],
+     "online_e2_minus_offline_text_per_seed": [
+      3.85,
+      2.56,
+      4.5,
+      4.35,
+      1.1
+     ],
+     "future_fixes": 8.6,
+     "voice_fixes": 37.2,
+     "share_future_fixes_voice_also": 55.81,
+     "dialogues_net_pos_zero_neg": [
+      3,
+      0,
+      2
+     ]
+    },
+    "improvised": {
+     "n_utts": 381,
+     "n_dialogues": 7,
+     "text_wf1": 63.24,
+     "fused_wf1": 71.26,
+     "gain_per_seed": [
+      9.89,
+      9.26,
+      7.86,
+      8.17,
+      4.92
+     ],
+     "gain_mean": 8.02,
+     "net_fixes": 32.4,
+     "offline_text_wf1": 63.98,
+     "offline_fused_wf1": 71.46,
+     "future_gain_per_seed": [
+      -0.75,
+      0.4,
+      1.6,
+      0.76,
+      1.71
+     ],
+     "online_e2_minus_offline_text_per_seed": [
+      10.64,
+      8.86,
+      6.26,
+      7.42,
+      3.21
+     ],
+     "future_fixes": 15.0,
+     "voice_fixes": 71.6,
+     "share_future_fixes_voice_also": 62.67,
+     "dialogues_net_pos_zero_neg": [
+      6,
+      0,
+      1
+     ]
+    }
+   }
+  },
+  "test": {
+   "future_by_group": {
+    "n_future=0": {
+     "share_pct": 1.91,
+     "n": 31,
+     "changed_per100": 0.0,
+     "fixes": 0.0,
+     "breaks": 0.0,
+     "net_per100": 0.0
+    },
+    "n_future=1": {
+     "share_pct": 1.91,
+     "n": 31,
+     "changed_per100": 4.52,
+     "fixes": 0.8,
+     "breaks": 0.2,
+     "net_per100": 1.94
+    },
+    "n_future=2": {
+     "share_pct": 96.18,
+     "n": 1561,
+     "changed_per100": 6.42,
+     "fixes": 47.6,
+     "breaks": 37.4,
+     "net_per100": 0.65
+    },
+    "next_turn_same_speaker": {
+     "share_pct": 27.23,
+     "n": 442,
+     "changed_per100": 6.52,
+     "fixes": 10.8,
+     "breaks": 11.6,
+     "net_per100": -0.18
+    },
+    "next_turn_other_speaker": {
+     "share_pct": 70.86,
+     "n": 1150,
+     "changed_per100": 6.33,
+     "fixes": 37.6,
+     "breaks": 26.0,
+     "net_per100": 1.01
+    },
+    "target_speaker_speaks_again_in_2": {
+     "share_pct": 80.47,
+     "n": 1306,
+     "changed_per100": 6.23,
+     "fixes": 37.8,
+     "breaks": 31.4,
+     "net_per100": 0.49
+    },
+    "target_speaker_silent_in_2": {
+     "share_pct": 17.62,
+     "n": 286,
+     "changed_per100": 7.06,
+     "fixes": 10.6,
+     "breaks": 6.2,
+     "net_per100": 1.54
+    }
+   },
+   "script_vs_impro": {
+    "scripted": {
+     "n_utts": 684,
+     "n_dialogues": 15,
+     "text_wf1": 66.13,
+     "fused_wf1": 73.42,
+     "gain_per_seed": [
+      8.05,
+      10.26,
+      5.69,
+      6.68,
+      5.76
+     ],
+     "gain_mean": 7.29,
+     "net_fixes": 49.8,
+     "offline_text_wf1": 66.46,
+     "offline_fused_wf1": 72.73,
+     "future_gain_per_seed": [
+      -0.15,
+      1.28,
+      0.46,
+      -0.37,
+      0.43
+     ],
+     "online_e2_minus_offline_text_per_seed": [
+      8.19,
+      8.98,
+      5.24,
+      7.05,
+      5.34
+     ],
+     "future_fixes": 20.8,
+     "voice_fixes": 106.8,
+     "share_future_fixes_voice_also": 73.08,
+     "dialogues_net_pos_zero_neg": [
+      12,
+      1,
+      2
+     ]
+    },
+    "improvised": {
+     "n_utts": 939,
+     "n_dialogues": 16,
+     "text_wf1": 75.67,
+     "fused_wf1": 74.23,
+     "gain_per_seed": [
+      -0.11,
+      -1.77,
+      -2.37,
+      -0.56,
+      -2.37
+     ],
+     "gain_mean": -1.44,
+     "net_fixes": -6.0,
+     "offline_text_wf1": 76.61,
+     "offline_fused_wf1": 75.53,
+     "future_gain_per_seed": [
+      1.26,
+      0.24,
+      0.22,
+      1.35,
+      1.67
+     ],
+     "online_e2_minus_offline_text_per_seed": [
+      -1.37,
+      -2.02,
+      -2.59,
+      -1.91,
+      -4.04
+     ],
+     "future_fixes": 27.6,
+     "voice_fixes": 81.0,
+     "share_future_fixes_voice_also": 57.97,
+     "dialogues_net_pos_zero_neg": [
+      8,
+      0,
+      8
+     ]
+    }
+   }
+  }
+ },
+ "meld": {
+  "dev": {
+   "future_by_group": {
+    "n_future=0": {
+     "share_pct": 10.28,
+     "n": 114,
+     "changed_per100": 0.7,
+     "fixes": 0.8,
+     "breaks": 0.0,
+     "net_per100": 0.7
+    },
+    "n_future=1": {
+     "share_pct": 9.74,
+     "n": 108,
+     "changed_per100": 4.26,
+     "fixes": 1.6,
+     "breaks": 2.8,
+     "net_per100": -1.11
+    },
+    "n_future=2": {
+     "share_pct": 79.98,
+     "n": 887,
+     "changed_per100": 5.07,
+     "fixes": 16.2,
+     "breaks": 14.4,
+     "net_per100": 0.2
+    },
+    "next_turn_same_speaker": {
+     "share_pct": 19.12,
+     "n": 212,
+     "changed_per100": 5.66,
+     "fixes": 2.6,
+     "breaks": 5.0,
+     "net_per100": -1.13
+    },
+    "next_turn_other_speaker": {
+     "share_pct": 70.6,
+     "n": 783,
+     "changed_per100": 4.8,
+     "fixes": 15.2,
+     "breaks": 12.2,
+     "net_per100": 0.38
+    },
+    "target_speaker_speaks_again_in_2": {
+     "share_pct": 58.79,
+     "n": 652,
+     "changed_per100": 5.12,
+     "fixes": 11.8,
+     "breaks": 11.4,
+     "net_per100": 0.06
+    },
+    "target_speaker_silent_in_2": {
+     "share_pct": 30.93,
+     "n": 343,
+     "changed_per100": 4.72,
+     "fixes": 6.0,
+     "breaks": 5.8,
+     "net_per100": 0.06
+    },
+    "dialogue_2_speakers": {
+     "share_pct": 43.64,
+     "n": 484,
+     "changed_per100": 4.3,
+     "fixes": 8.4,
+     "breaks": 7.4,
+     "net_per100": 0.21
+    },
+    "dialogue_3plus_speakers": {
+     "share_pct": 56.36,
+     "n": 625,
+     "changed_per100": 4.74,
+     "fixes": 10.2,
+     "breaks": 9.8,
+     "net_per100": 0.06
+    }
+   },
+   "perclass": {
+    "n_per_class": [
+     470,
+     163,
+     111,
+     153,
+     150,
+     40,
+     22
+    ],
+    "text_acc": [
+     85.6,
+     63.1,
+     43.4,
+     52.3,
+     71.2,
+     24.0,
+     45.5
+    ],
+    "e1": {
+     "rescue": [
+      80.3,
+      9.7,
+      3.3,
+      6.6,
+      8.8,
+      1.4,
+      0.0
+     ],
+     "harm": [
+      18.7,
+      81.5,
+      92.1,
+      81.1,
+      79.4,
+      98.3,
+      100.0
+     ],
+     "pred_share_neutral": 75.3
+    },
+    "e2": {
+     "rescue": [
+      78.3,
+      12.6,
+      3.9,
+      15.9,
+      9.2,
+      0.0,
+      0.0
+     ],
+     "harm": [
+      21.7,
+      92.2,
+      93.4,
+      75.4,
+      83.7,
+      100.0,
+      100.0
+     ],
+     "pred_share_neutral": 71.0
+    },
+    "e3": {
+     "rescue": [
+      76.8,
+      9.0,
+      3.8,
+      14.0,
+      7.9,
+      0.6,
+      0.0
+     ],
+     "harm": [
+      20.6,
+      83.3,
+      79.3,
+      66.5,
+      81.8,
+      100.0,
+      100.0
+     ],
+     "pred_share_neutral": 71.1
+    }
+   }
+  },
+  "test": {
+   "future_by_group": {
+    "n_future=0": {
+     "share_pct": 10.73,
+     "n": 280,
+     "changed_per100": 2.07,
+     "fixes": 1.4,
+     "breaks": 2.2,
+     "net_per100": -0.29
+    },
+    "n_future=1": {
+     "share_pct": 10.27,
+     "n": 268,
+     "changed_per100": 3.88,
+     "fixes": 3.8,
+     "breaks": 3.8,
+     "net_per100": 0.0
+    },
+    "n_future=2": {
+     "share_pct": 79.0,
+     "n": 2062,
+     "changed_per100": 4.53,
+     "fixes": 36.4,
+     "breaks": 32.4,
+     "net_per100": 0.19
+    },
+    "next_turn_same_speaker": {
+     "share_pct": 21.65,
+     "n": 565,
+     "changed_per100": 5.38,
+     "fixes": 11.2,
+     "breaks": 10.2,
+     "net_per100": 0.18
+    },
+    "next_turn_other_speaker": {
+     "share_pct": 67.62,
+     "n": 1765,
+     "changed_per100": 4.16,
+     "fixes": 29.0,
+     "breaks": 26.0,
+     "net_per100": 0.17
+    },
+    "target_speaker_speaks_again_in_2": {
+     "share_pct": 58.47,
+     "n": 1526,
+     "changed_per100": 4.61,
+     "fixes": 28.6,
+     "breaks": 23.4,
+     "net_per100": 0.34
+    },
+    "target_speaker_silent_in_2": {
+     "share_pct": 30.8,
+     "n": 804,
+     "changed_per100": 4.15,
+     "fixes": 11.6,
+     "breaks": 12.8,
+     "net_per100": -0.15
+    },
+    "dialogue_2_speakers": {
+     "share_pct": 42.53,
+     "n": 1110,
+     "changed_per100": 4.07,
+     "fixes": 18.4,
+     "breaks": 14.4,
+     "net_per100": 0.36
+    },
+    "dialogue_3plus_speakers": {
+     "share_pct": 57.47,
+     "n": 1500,
+     "changed_per100": 4.29,
+     "fixes": 23.2,
+     "breaks": 24.0,
+     "net_per100": -0.05
+    }
+   },
+   "perclass": {
+    "n_per_class": [
+     1256,
+     402,
+     208,
+     345,
+     281,
+     50,
+     68
+    ],
+    "text_acc": [
+     82.5,
+     63.4,
+     39.8,
+     47.7,
+     67.8,
+     30.4,
+     38.8
+    ],
+    "e1": {
+     "rescue": [
+      78.3,
+      12.6,
+      1.1,
+      9.6,
+      10.5,
+      0.0,
+      0.0
+     ],
+     "harm": [
+      11.3,
+      67.0,
+      92.2,
+      76.7,
+      70.2,
+      100.0,
+      99.3
+     ],
+     "pred_share_neutral": 76.6
+    },
+    "e2": {
+     "rescue": [
+      78.1,
+      13.1,
+      3.9,
+      24.2,
+      13.2,
+      0.0,
+      0.5
+     ],
+     "harm": [
+      16.8,
+      78.1,
+      93.9,
+      67.1,
+      80.9,
+      100.0,
+      100.0
+     ],
+     "pred_share_neutral": 72.8
+    },
+    "e3": {
+     "rescue": [
+      81.6,
+      11.3,
+      2.7,
+      23.6,
+      13.0,
+      0.0,
+      0.0
+     ],
+     "harm": [
+      9.9,
+      64.3,
+      81.9,
+      59.2,
+      70.7,
+      98.6,
+      99.2
+     ],
+     "pred_share_neutral": 75.0
+    }
+   }
+  }
+ }
+}

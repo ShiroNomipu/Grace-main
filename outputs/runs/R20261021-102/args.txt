@@ -1,0 +1,1 @@
+--dataset iemocap --epochs 3 --cosine --seed 123 --fast_eval --eval_last --ctx 16 --future_mode dual --future_k 2 --future_pdrop 0.5 --tag v1f_dual_c16_s123

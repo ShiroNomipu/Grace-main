@@ -1,0 +1,178 @@
+{
+ "design": "Layer weights of the WavLM Base+ speech expert on IEMOCAP (2026-10-27, CPU; descriptive, written after the lock\nresults). The expert combines the 13 hidden states of WavLM Base+ (index 0: the output of the convolutional encoder\nafter projection; 1-12: transformer layers) with softmax(head.lw), learned from zeros (uniform start, 1/13 each).\nReads head.lw from expert_bf16.pt of the five lock-batch E2 runs (lock_runs.json, iemocap/experts/e2), records the\nsha256 of each checkpoint, and reports per seed and over seeds: the weight of every state in percent, the state with\nthe largest weight, and the shares of states 0-4, 5-8 and 9-12. MELD E2 checkpoints were not kept, so MELD is absent.\nUsage (repo root): python <this> --out <json>",
+ "runs": [
+  "R20261021-21",
+  "R20261021-22",
+  "R20261021-23",
+  "R20261021-24",
+  "R20261021-25"
+ ],
+ "seeds": [
+  123,
+  42,
+  3047,
+  7,
+  2026
+ ],
+ "sha256": {
+  "R20261021-21": "4ae2ef4c046bdd23d75abdc57afd298d26829b502fa67a150de3a0879d12aab0",
+  "R20261021-22": "838938b404446ee8deeca410202e43402e8c2d92ae73134c62cb2574de85c0ef",
+  "R20261021-23": "36cf6168ee5585e31df4177fdf3cfea600c6f9350b524f7029ec42688435e6eb",
+  "R20261021-24": "13bea4bbd7aa4ad099ef59b4d31da8bcb90af7a4d1f981f5b46760c664ed6db5",
+  "R20261021-25": "341602611bae5f85850eee8b2dbea4bbeee03ab3d522125082675b25cb94a8a6"
+ },
+ "uniform_pct": 7.69,
+ "per_seed_pct": [
+  [
+   5.27,
+   5.27,
+   5.68,
+   5.93,
+   6.02,
+   6.39,
+   8.09,
+   9.16,
+   10.29,
+   10.45,
+   10.51,
+   9.87,
+   7.06
+  ],
+  [
+   5.19,
+   5.31,
+   5.75,
+   6.61,
+   6.51,
+   6.64,
+   7.3,
+   8.57,
+   9.51,
+   10.54,
+   10.87,
+   10.36,
+   6.84
+  ],
+  [
+   5.07,
+   5.11,
+   5.3,
+   5.63,
+   5.55,
+   5.63,
+   6.89,
+   9.03,
+   10.99,
+   11.42,
+   11.31,
+   10.61,
+   7.46
+  ],
+  [
+   5.27,
+   5.32,
+   5.83,
+   6.1,
+   6.65,
+   7.74,
+   9.96,
+   10.67,
+   9.86,
+   9.32,
+   8.87,
+   8.4,
+   6.01
+  ],
+  [
+   5.46,
+   5.65,
+   6.25,
+   7.06,
+   7.55,
+   8.77,
+   9.54,
+   9.73,
+   9.2,
+   8.72,
+   8.56,
+   8.16,
+   5.33
+  ]
+ ],
+ "mean_pct": [
+  5.25,
+  5.33,
+  5.76,
+  6.27,
+  6.45,
+  7.03,
+  8.36,
+  9.43,
+  9.97,
+  10.09,
+  10.03,
+  9.48,
+  6.54
+ ],
+ "sd_pct": [
+  0.14,
+  0.2,
+  0.34,
+  0.57,
+  0.75,
+  1.23,
+  1.35,
+  0.8,
+  0.7,
+  1.07,
+  1.23,
+  1.13,
+  0.86
+ ],
+ "argmax_state_per_seed": [
+  10,
+  10,
+  9,
+  7,
+  7
+ ],
+ "group_share_pct": {
+  "0-4": {
+   "mean": 29.07,
+   "per_seed": [
+    28.18,
+    29.36,
+    26.66,
+    29.17,
+    31.98
+   ]
+  },
+  "5-8": {
+   "mean": 34.79,
+   "per_seed": [
+    33.93,
+    32.03,
+    32.54,
+    38.23,
+    37.24
+   ]
+  },
+  "9-12": {
+   "mean": 36.14,
+   "per_seed": [
+    37.89,
+    38.61,
+    40.8,
+    32.6,
+    30.78
+   ]
+  }
+ },
+ "max_minus_min_pct_per_seed": [
+  5.24,
+  5.69,
+  6.35,
+  5.4,
+  4.4
+ ]
+}

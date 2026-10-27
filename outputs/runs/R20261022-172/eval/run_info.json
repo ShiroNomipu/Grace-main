@@ -1,0 +1,38 @@
+{
+ "src": "R20261022-129",
+ "args": {
+  "src": "R20261022-129",
+  "out_dir": "outputs/runs/R20261022-172/eval",
+  "limit": 0,
+  "mode": "online",
+  "split": "dev"
+ },
+ "src_args": {
+  "--dataset": "meld",
+  "--epochs": "3",
+  "--focal_gamma": "0.5",
+  "--seed": "7",
+  "--ctx": "16",
+  "--future_mode": "online",
+  "--future_k": "2",
+  "--tag": "lock_meld_online_c16_s7"
+ },
+ "adapter": "outputs/runs/R20261022-129/lock_meld_online_c16_s7_lora_last",
+ "n": 1109,
+ "label_list": [
+  "neutral",
+  "joy",
+  "sadness",
+  "anger",
+  "surprise",
+  "fear",
+  "disgust"
+ ],
+ "weighted_f1": 0.667812568312374,
+ "ref_weighted_f1_last": 0.6746994682719278,
+ "elapsed_sec": 289.6,
+ "sha256": {
+  "script": "5a8017c0a38d079e17676eacd167d7fda54e02273316d49bb9e56e71dd7a4137",
+  "adapter_model.safetensors": "56176ba432c424bfab69958775f16b100b10e3a2e38ac5a8e1d327eb480b88bc"
+ }
+}

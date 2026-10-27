@@ -1,0 +1,37 @@
+{
+ "src": "R20261022-102",
+ "args": {
+  "src": "R20261022-102",
+  "out_dir": "outputs/runs/R20261022-164/eval",
+  "limit": 0,
+  "mode": "online",
+  "split": "test"
+ },
+ "src_args": {
+  "--dataset": "iemocap",
+  "--epochs": "3",
+  "--seed": "2026",
+  "--ctx": "16",
+  "--future_mode": "dual",
+  "--future_k": "2",
+  "--future_pdrop": "0.5",
+  "--tag": "lock_iemocap_dual_c16_s2026"
+ },
+ "adapter": "outputs/runs/R20261022-102/lock_iemocap_dual_c16_s2026_lora_last",
+ "n": 1623,
+ "label_list": [
+  "ang",
+  "exc",
+  "fru",
+  "hap",
+  "neu",
+  "sad"
+ ],
+ "weighted_f1": 0.7220906252558897,
+ "ref_weighted_f1_last": 0.7220906252558897,
+ "elapsed_sec": 501.6,
+ "sha256": {
+  "script": "5a8017c0a38d079e17676eacd167d7fda54e02273316d49bb9e56e71dd7a4137",
+  "adapter_model.safetensors": "b7e991698838fd11d8886c50ae1ac5952cae44938cba0abbfa014e5f34bff494"
+ }
+}

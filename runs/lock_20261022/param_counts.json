@@ -1,0 +1,13 @@
+{
+ "design": "Parameter counts for the paper (2026-10-27, CPU only, reads tensor shapes only). Sources: the lock / B1 artifacts the\npaper numbers come from, seed 123. Backbone: safetensors headers of models/Qwen2.5-7B-Instruct. LoRA: adapter of the\nIEMOCAP dual run R20261021-102 (_lora_last). E2: expert_bf16.pt of R20261021-21 (WavLM Base+ encoder + head).\nGRACE: visual_adapter.pt of R20261022-306 (_last; the LoRA of GRACE has the same shape as ours and is counted apart).\nUsage (repo root): python <this> --out <json>",
+ "backbone_qwen2.5_7b": 7615616512,
+ "lora_ours_R20261021-102": 20185088,
+ "e2_R20261021-21": 94386564,
+ "grace_injection_R20261022-306": 208377348,
+ "grace_lora_R20261022-306": 20185088,
+ "e2_frozen_cnn_feature_encoder": 4200448,
+ "e2_head": 5396,
+ "trainable_ours": 110371204,
+ "trainable_grace": 228562436,
+ "trainable_grace+e2": 318748552
+}

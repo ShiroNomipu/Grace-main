@@ -1,0 +1,38 @@
+{
+  "args": {
+    "checkpoint": "outputs/runs/R20261022-305/pilot3_dial1t_2blk_meld_nofa_mdrop30c_alr8e-05_cos_focal0.5_s2026_ctx16_maudio_last",
+    "dataset": "meld",
+    "split": "dev",
+    "n_blocks": 2,
+    "n_prev_turns": 1,
+    "no_frame_attn": true,
+    "conditions": [
+      "clean",
+      "drop"
+    ],
+    "out_dir": "outputs/runs/R20261022-319/eval",
+    "limit": 0,
+    "fast_eval": true,
+    "ctx": 16,
+    "meld_audio": true,
+    "cue_file": null
+  },
+  "n": 1109,
+  "elapsed_sec": 550.9,
+  "sec_per_1k_samples": 496.8,
+  "label_list": [
+    "neutral",
+    "joy",
+    "sadness",
+    "anger",
+    "surprise",
+    "fear",
+    "disgust"
+  ],
+  "sha256": {
+    "eval_dump_preds.py": "aed3ba0bf6d37aa9c9e74b27217956ca024fa5630c233b97b2e471ee59c22830",
+    "run_pilot3_dialogue_visual.py": "aaa8eab98d7e9025f7fd515ab5eb514566b36e934864ff140ad066d7a07a9098",
+    "adapter_model.safetensors": "0a358fc0665460ff12ad4cb6aa0c8ff34441c4eb0c57b89edb211362aac324bb",
+    "visual_adapter.pt": "e0dec17c3071f07f07edb6877be0008ea75553ae92d3c904f8508f6337f882c6"
+  }
+}

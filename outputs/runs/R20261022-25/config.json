@@ -1,0 +1,70 @@
+{
+ "expert": "e2",
+ "dataset": "meld",
+ "seed": 2026,
+ "smoke": false,
+ "select": "best",
+ "chosen_epoch": 5,
+ "epochs": 8,
+ "batch": 8,
+ "enc_lr": 3e-05,
+ "head_lr": 0.001,
+ "weight_decay": 0.01,
+ "clip": 1.0,
+ "warmup": 0.1,
+ "max_sec": 15.0,
+ "n": {
+  "train": 9988,
+  "dev": 1109,
+  "test": 2610
+ },
+ "input_report": {
+  "train": {
+   "truncated_at_15s": 25,
+   "n": 9989,
+   "no_audio": [
+    "125|3"
+   ]
+  },
+  "dev": {
+   "truncated_at_15s": 6,
+   "n": 1109,
+   "no_audio": [
+    "110|7"
+   ]
+  },
+  "test": {
+   "truncated_at_15s": 6,
+   "n": 2610,
+   "no_audio": []
+  }
+ },
+ "peak_mem_mb": 6594.9,
+ "sec_per_step": 0.2168,
+ "checkpoint": "expert_bf16.pt",
+ "sha256_checkpoint": "4ede1a828525c76423ab6db829a6e66c5da5e75e8cc5454c4a0ff19776c730b8",
+ "sha256_script": "cbcd73e005df5f6ebf011a05b3e8e4de4119adcb86bfbbecd5726252aa66161f",
+ "label_list": [
+  "neutral",
+  "joy",
+  "sadness",
+  "anger",
+  "surprise",
+  "fear",
+  "disgust"
+ ],
+ "wavlm": "models/wavlm-base-plus",
+ "wavlm_sha256_pytorch_model": "3bb273a6ace99408b50cfc81afdbb7ef2de02da2eab0234e18db608ce692fe51",
+ "results": {
+  "dev": {
+   "weighted_f1": 32.985,
+   "accuracy": 40.938,
+   "n": 1109
+  },
+  "test": {
+   "weighted_f1": 42.482,
+   "accuracy": 50.038,
+   "n": 2610
+  }
+ }
+}

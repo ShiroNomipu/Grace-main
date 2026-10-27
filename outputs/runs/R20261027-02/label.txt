@@ -1,0 +1,1 @@
+dev checks of descriptive test patterns before writing (CPU)

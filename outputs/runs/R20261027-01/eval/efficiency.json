@@ -1,0 +1,823 @@
+{
+ "design": "Completeness item (2026-10-27; listed in runs/\u9501\u5b9a\u6279_20261022/\u5b8c\u6574\u6027_CPU\u90e8\u5206_2026-10-25.md \u00a76, user approved queuing\nthe remaining GPU items): per-utterance inference latency of the final system and of the injection baseline, for the\nreal-time setting. Derived from _remote/smoke_efficiency_20261020.py (777f8f80, unchanged). Evaluation only; named\n_remote/smoke_* only so that the resident queue counts it as a GPU slot.\n\nParent mode (no --config): waits until no other process holds the GPU (up to --wait_h hours; the snapshot is recorded\neither way), then runs each configuration in its own subprocess, one after another, and writes out_dir/efficiency.json.\nConfigurations (seed 123 checkpoints; backbone 4-bit NF4; batch 1):\n  dual_online_iemocap  C15 dual LoRA R20261021-102 _lora_last, online prompt (future turns \"(not available)\"), ctx 16\n  dual_full_iemocap    same adapter, 2 future turns\n  e2_iemocap           E2 R20261021-21 expert_bf16.pt (WavLM Base+ fine-tuned), raw 16 kHz wav of the target (<= 15 s),\n                       bf16 autocast, model code from _remote/smoke_g1expert_20261021.py (the script that trained it)\n  grace_iemocap        B1 fixed GRACE R20261022-306 _last, hooks on, ctx 16; emotion2vec features precomputed\n  dual_online_meld     MELD dual LoRA R20261022-121 _lora_last, online prompt\n  dual_full_meld       same adapter, 2 future turns\nUtterances: round(linspace(0, n_test - 1, --n_utts)) over the test list of each dataset (dual-model order); every\nconfiguration of a dataset times the same utterances, matched by key dialogue_id|utt_id.\nPer utterance: one full prediction (text and GRACE: fast candidate scoring of all labels; E2: wav array -> log-probabilities,\nincl. host-to-device copy, excl. disk read), 1 warm-up then --iters timed, cuda synchronize around each.\nReported per configuration: mean / median over utterances of the per-utterance mean ms, mean prompt tokens, mean audio\nseconds (e2), torch.cuda.max_memory_allocated (includes the weights), sha256 of the checkpoint file.\nDerived (parent, IEMOCAP, per utterance then averaged): online + E2 run one after the other (sum) and side by side (max).\nNot included: emotion2vec feature extraction for GRACE (no funasr; no package is installed for this), wav decoding.\n",
+ "script_sha256": "8342fe20520668f68a8af6130e6e55dba68a69a56f2470e55f7d4a25bde86ad7",
+ "waited_min": 0.0,
+ "gpu_apps_at_start": [],
+ "versions": {
+  "torch": "2.9.0+cu128",
+  "transformers": "4.56.1"
+ },
+ "args": {
+  "config": null,
+  "configs": [
+   "dual_online_iemocap",
+   "dual_full_iemocap",
+   "e2_iemocap",
+   "grace_iemocap",
+   "dual_online_meld",
+   "dual_full_meld"
+  ],
+  "out_dir": "outputs/runs/R20261027-01/eval",
+  "n_utts": 20,
+  "iters": 10,
+  "wait_h": 6
+ },
+ "results": {
+  "dual_online_iemocap": {
+   "config": "dual_online_iemocap",
+   "run": "R20261021-102",
+   "kind": "online",
+   "checkpoint_file": "outputs/runs/R20261021-102/v1f_dual_c16_s123_lora_last/adapter_model.safetensors",
+   "checkpoint_sha256": "a7103b22018124849b3adc1993a017273a1124625c32a1601ca0c249a4dcbc87",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 134.69,
+   "predict_ms_median": 131.63,
+   "max_memory_allocated_mb": 6744.0,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "Ses05M_impro03|0",
+     "prompt_tokens": 103,
+     "n_future": 2,
+     "predict_ms": 146.662
+    },
+    {
+     "key": "Ses05F_impro02|27",
+     "prompt_tokens": 365,
+     "n_future": 2,
+     "predict_ms": 131.653
+    },
+    {
+     "key": "Ses05F_impro04|10",
+     "prompt_tokens": 389,
+     "n_future": 2,
+     "predict_ms": 130.65
+    },
+    {
+     "key": "Ses05M_script01_1b|11",
+     "prompt_tokens": 408,
+     "n_future": 2,
+     "predict_ms": 129.82
+    },
+    {
+     "key": "Ses05M_script01_1|24",
+     "prompt_tokens": 426,
+     "n_future": 2,
+     "predict_ms": 130.668
+    },
+    {
+     "key": "Ses05F_impro08|58",
+     "prompt_tokens": 306,
+     "n_future": 0,
+     "predict_ms": 132.064
+    },
+    {
+     "key": "Ses05F_impro06|16",
+     "prompt_tokens": 298,
+     "n_future": 2,
+     "predict_ms": 132.058
+    },
+    {
+     "key": "Ses05M_script02_2|21",
+     "prompt_tokens": 668,
+     "n_future": 2,
+     "predict_ms": 156.74
+    },
+    {
+     "key": "Ses05F_script02_2|48",
+     "prompt_tokens": 416,
+     "n_future": 2,
+     "predict_ms": 129.8
+    },
+    {
+     "key": "Ses05F_impro01|8",
+     "prompt_tokens": 315,
+     "n_future": 2,
+     "predict_ms": 130.788
+    },
+    {
+     "key": "Ses05M_impro01|7",
+     "prompt_tokens": 257,
+     "n_future": 2,
+     "predict_ms": 132.7
+    },
+    {
+     "key": "Ses05F_script03_2|18",
+     "prompt_tokens": 323,
+     "n_future": 2,
+     "predict_ms": 131.267
+    },
+    {
+     "key": "Ses05F_script01_1|16",
+     "prompt_tokens": 385,
+     "n_future": 2,
+     "predict_ms": 132.109
+    },
+    {
+     "key": "Ses05F_impro05|49",
+     "prompt_tokens": 480,
+     "n_future": 2,
+     "predict_ms": 130.316
+    },
+    {
+     "key": "Ses05M_script03_2|43",
+     "prompt_tokens": 393,
+     "n_future": 2,
+     "predict_ms": 130.539
+    },
+    {
+     "key": "Ses05M_impro07|65",
+     "prompt_tokens": 290,
+     "n_future": 2,
+     "predict_ms": 133.286
+    },
+    {
+     "key": "Ses05F_script01_3|30",
+     "prompt_tokens": 398,
+     "n_future": 2,
+     "predict_ms": 131.611
+    },
+    {
+     "key": "Ses05M_impro04|71",
+     "prompt_tokens": 397,
+     "n_future": 2,
+     "predict_ms": 132.69
+    },
+    {
+     "key": "Ses05F_impro03|82",
+     "prompt_tokens": 273,
+     "n_future": 0,
+     "predict_ms": 131.062
+    },
+    {
+     "key": "Ses05F_script02_1|42",
+     "prompt_tokens": 646,
+     "n_future": 0,
+     "predict_ms": 157.4
+    }
+   ],
+   "prompt_tokens_mean": 376.8
+  },
+  "dual_full_iemocap": {
+   "config": "dual_full_iemocap",
+   "run": "R20261021-102",
+   "kind": "full",
+   "checkpoint_file": "outputs/runs/R20261021-102/v1f_dual_c16_s123_lora_last/adapter_model.safetensors",
+   "checkpoint_sha256": "a7103b22018124849b3adc1993a017273a1124625c32a1601ca0c249a4dcbc87",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 133.78,
+   "predict_ms_median": 129.47,
+   "max_memory_allocated_mb": 6744.0,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "Ses05M_impro03|0",
+     "prompt_tokens": 119,
+     "n_future": 2,
+     "predict_ms": 145.564
+    },
+    {
+     "key": "Ses05F_impro02|27",
+     "prompt_tokens": 408,
+     "n_future": 2,
+     "predict_ms": 128.34
+    },
+    {
+     "key": "Ses05F_impro04|10",
+     "prompt_tokens": 415,
+     "n_future": 2,
+     "predict_ms": 128.086
+    },
+    {
+     "key": "Ses05M_script01_1b|11",
+     "prompt_tokens": 449,
+     "n_future": 2,
+     "predict_ms": 128.576
+    },
+    {
+     "key": "Ses05M_script01_1|24",
+     "prompt_tokens": 487,
+     "n_future": 2,
+     "predict_ms": 128.255
+    },
+    {
+     "key": "Ses05F_impro08|58",
+     "prompt_tokens": 311,
+     "n_future": 0,
+     "predict_ms": 128.786
+    },
+    {
+     "key": "Ses05F_impro06|16",
+     "prompt_tokens": 330,
+     "n_future": 2,
+     "predict_ms": 127.941
+    },
+    {
+     "key": "Ses05M_script02_2|21",
+     "prompt_tokens": 706,
+     "n_future": 2,
+     "predict_ms": 159.158
+    },
+    {
+     "key": "Ses05F_script02_2|48",
+     "prompt_tokens": 481,
+     "n_future": 2,
+     "predict_ms": 128.865
+    },
+    {
+     "key": "Ses05F_impro01|8",
+     "prompt_tokens": 365,
+     "n_future": 2,
+     "predict_ms": 129.339
+    },
+    {
+     "key": "Ses05M_impro01|7",
+     "prompt_tokens": 350,
+     "n_future": 2,
+     "predict_ms": 130.149
+    },
+    {
+     "key": "Ses05F_script03_2|18",
+     "prompt_tokens": 341,
+     "n_future": 2,
+     "predict_ms": 129.603
+    },
+    {
+     "key": "Ses05F_script01_1|16",
+     "prompt_tokens": 445,
+     "n_future": 2,
+     "predict_ms": 128.682
+    },
+    {
+     "key": "Ses05F_impro05|49",
+     "prompt_tokens": 542,
+     "n_future": 2,
+     "predict_ms": 148.409
+    },
+    {
+     "key": "Ses05M_script03_2|43",
+     "prompt_tokens": 423,
+     "n_future": 2,
+     "predict_ms": 130.799
+    },
+    {
+     "key": "Ses05M_impro07|65",
+     "prompt_tokens": 297,
+     "n_future": 2,
+     "predict_ms": 129.856
+    },
+    {
+     "key": "Ses05F_script01_3|30",
+     "prompt_tokens": 439,
+     "n_future": 2,
+     "predict_ms": 129.679
+    },
+    {
+     "key": "Ses05M_impro04|71",
+     "prompt_tokens": 410,
+     "n_future": 2,
+     "predict_ms": 128.527
+    },
+    {
+     "key": "Ses05F_impro03|82",
+     "prompt_tokens": 278,
+     "n_future": 0,
+     "predict_ms": 130.731
+    },
+    {
+     "key": "Ses05F_script02_1|42",
+     "prompt_tokens": 651,
+     "n_future": 0,
+     "predict_ms": 156.213
+    }
+   ],
+   "prompt_tokens_mean": 412.35
+  },
+  "e2_iemocap": {
+   "config": "e2_iemocap",
+   "run": "R20261021-21",
+   "kind": "e2",
+   "checkpoint_file": "outputs/runs/R20261021-21/expert_bf16.pt",
+   "checkpoint_sha256": "4ae2ef4c046bdd23d75abdc57afd298d26829b502fa67a150de3a0879d12aab0",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 11.47,
+   "predict_ms_median": 11.01,
+   "max_memory_allocated_mb": 686.1,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "Ses05M_impro03|0",
+     "audio_sec": 1.95,
+     "predict_ms": 11.011
+    },
+    {
+     "key": "Ses05F_impro02|27",
+     "audio_sec": 10.88,
+     "predict_ms": 12.224
+    },
+    {
+     "key": "Ses05F_impro04|10",
+     "audio_sec": 4.7,
+     "predict_ms": 11.362
+    },
+    {
+     "key": "Ses05M_script01_1b|11",
+     "audio_sec": 2.53,
+     "predict_ms": 12.494
+    },
+    {
+     "key": "Ses05M_script01_1|24",
+     "audio_sec": 3.31,
+     "predict_ms": 12.674
+    },
+    {
+     "key": "Ses05F_impro08|58",
+     "audio_sec": 1.38,
+     "predict_ms": 11.84
+    },
+    {
+     "key": "Ses05F_impro06|16",
+     "audio_sec": 4.03,
+     "predict_ms": 10.976
+    },
+    {
+     "key": "Ses05M_script02_2|21",
+     "audio_sec": 15.0,
+     "predict_ms": 13.81
+    },
+    {
+     "key": "Ses05F_script02_2|48",
+     "audio_sec": 4.93,
+     "predict_ms": 11.29
+    },
+    {
+     "key": "Ses05F_impro01|8",
+     "audio_sec": 2.94,
+     "predict_ms": 10.878
+    },
+    {
+     "key": "Ses05M_impro01|7",
+     "audio_sec": 3.61,
+     "predict_ms": 10.758
+    },
+    {
+     "key": "Ses05F_script03_2|18",
+     "audio_sec": 3.3,
+     "predict_ms": 11.012
+    },
+    {
+     "key": "Ses05F_script01_1|16",
+     "audio_sec": 6.45,
+     "predict_ms": 11.232
+    },
+    {
+     "key": "Ses05F_impro05|49",
+     "audio_sec": 3.888,
+     "predict_ms": 10.817
+    },
+    {
+     "key": "Ses05M_script03_2|43",
+     "audio_sec": 2.16,
+     "predict_ms": 10.721
+    },
+    {
+     "key": "Ses05M_impro07|65",
+     "audio_sec": 4.377,
+     "predict_ms": 10.88
+    },
+    {
+     "key": "Ses05F_script01_3|30",
+     "audio_sec": 14.901,
+     "predict_ms": 12.851
+    },
+    {
+     "key": "Ses05M_impro04|71",
+     "audio_sec": 3.27,
+     "predict_ms": 10.936
+    },
+    {
+     "key": "Ses05F_impro03|82",
+     "audio_sec": 2.32,
+     "predict_ms": 10.791
+    },
+    {
+     "key": "Ses05F_script02_1|42",
+     "audio_sec": 4.32,
+     "predict_ms": 10.843
+    }
+   ],
+   "audio_sec_mean": 5.01
+  },
+  "grace_iemocap": {
+   "config": "grace_iemocap",
+   "run": "R20261022-306",
+   "kind": "grace",
+   "checkpoint_file": "outputs/runs/R20261022-306/pilot3_dial1t_2blk_iemocap_nofa_mdrop30c_alr5e-05_cos_s123_ctx16_last/visual_adapter.pt",
+   "checkpoint_sha256": "62da588ba2e7f5b420927c530b23c9991e7f5b28513957b15e5fd70b61c19e15",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 145.58,
+   "predict_ms_median": 142.43,
+   "max_memory_allocated_mb": 9048.1,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "Ses05M_impro03|0",
+     "prompt_tokens": 85,
+     "predict_ms": 138.647
+    },
+    {
+     "key": "Ses05F_impro02|27",
+     "prompt_tokens": 350,
+     "predict_ms": 140.847
+    },
+    {
+     "key": "Ses05F_impro04|10",
+     "prompt_tokens": 374,
+     "predict_ms": 141.944
+    },
+    {
+     "key": "Ses05M_script01_1b|11",
+     "prompt_tokens": 393,
+     "predict_ms": 142.361
+    },
+    {
+     "key": "Ses05M_script01_1|24",
+     "prompt_tokens": 411,
+     "predict_ms": 143.889
+    },
+    {
+     "key": "Ses05F_impro08|58",
+     "prompt_tokens": 291,
+     "predict_ms": 142.194
+    },
+    {
+     "key": "Ses05F_impro06|16",
+     "prompt_tokens": 283,
+     "predict_ms": 141.131
+    },
+    {
+     "key": "Ses05M_script02_2|21",
+     "prompt_tokens": 653,
+     "predict_ms": 177.819
+    },
+    {
+     "key": "Ses05F_script02_2|48",
+     "prompt_tokens": 401,
+     "predict_ms": 144.836
+    },
+    {
+     "key": "Ses05F_impro01|8",
+     "prompt_tokens": 300,
+     "predict_ms": 140.707
+    },
+    {
+     "key": "Ses05M_impro01|7",
+     "prompt_tokens": 242,
+     "predict_ms": 146.198
+    },
+    {
+     "key": "Ses05F_script03_2|18",
+     "prompt_tokens": 308,
+     "predict_ms": 140.9
+    },
+    {
+     "key": "Ses05F_script01_1|16",
+     "prompt_tokens": 370,
+     "predict_ms": 142.493
+    },
+    {
+     "key": "Ses05F_impro05|49",
+     "prompt_tokens": 465,
+     "predict_ms": 144.974
+    },
+    {
+     "key": "Ses05M_script03_2|43",
+     "prompt_tokens": 378,
+     "predict_ms": 145.302
+    },
+    {
+     "key": "Ses05M_impro07|65",
+     "prompt_tokens": 275,
+     "predict_ms": 140.366
+    },
+    {
+     "key": "Ses05F_script01_3|30",
+     "prompt_tokens": 383,
+     "predict_ms": 142.82
+    },
+    {
+     "key": "Ses05M_impro04|71",
+     "prompt_tokens": 382,
+     "predict_ms": 143.395
+    },
+    {
+     "key": "Ses05F_impro03|82",
+     "prompt_tokens": 258,
+     "predict_ms": 141.712
+    },
+    {
+     "key": "Ses05F_script02_1|42",
+     "prompt_tokens": 631,
+     "predict_ms": 168.987
+    }
+   ],
+   "prompt_tokens_mean": 361.65
+  },
+  "dual_online_meld": {
+   "config": "dual_online_meld",
+   "run": "R20261022-121",
+   "kind": "online",
+   "checkpoint_file": "outputs/runs/R20261022-121/lock_meld_dual_c16_s123_lora_last/adapter_model.safetensors",
+   "checkpoint_sha256": "a84b8d20c54f6fc826b67382c0b1fd3797567eccc2f65a93843ab4045f986c23",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 127.86,
+   "predict_ms_median": 127.82,
+   "max_memory_allocated_mb": 6744.0,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "0|0",
+     "prompt_tokens": 119,
+     "n_future": 2,
+     "predict_ms": 127.805
+    },
+    {
+     "key": "15|5",
+     "prompt_tokens": 202,
+     "n_future": 0,
+     "predict_ms": 127.769
+    },
+    {
+     "key": "29|9",
+     "prompt_tokens": 237,
+     "n_future": 2,
+     "predict_ms": 128.083
+    },
+    {
+     "key": "46|7",
+     "prompt_tokens": 210,
+     "n_future": 1,
+     "predict_ms": 127.338
+    },
+    {
+     "key": "63|0",
+     "prompt_tokens": 108,
+     "n_future": 1,
+     "predict_ms": 125.847
+    },
+    {
+     "key": "76|2",
+     "prompt_tokens": 135,
+     "n_future": 2,
+     "predict_ms": 128.536
+    },
+    {
+     "key": "95|14",
+     "prompt_tokens": 346,
+     "n_future": 2,
+     "predict_ms": 128.219
+    },
+    {
+     "key": "109|5",
+     "prompt_tokens": 224,
+     "n_future": 2,
+     "predict_ms": 127.796
+    },
+    {
+     "key": "121|1",
+     "prompt_tokens": 136,
+     "n_future": 2,
+     "predict_ms": 128.811
+    },
+    {
+     "key": "132|6",
+     "prompt_tokens": 227,
+     "n_future": 2,
+     "predict_ms": 128.091
+    },
+    {
+     "key": "146|6",
+     "prompt_tokens": 257,
+     "n_future": 0,
+     "predict_ms": 127.529
+    },
+    {
+     "key": "162|5",
+     "prompt_tokens": 152,
+     "n_future": 0,
+     "predict_ms": 127.838
+    },
+    {
+     "key": "174|4",
+     "prompt_tokens": 175,
+     "n_future": 2,
+     "predict_ms": 127.97
+    },
+    {
+     "key": "189|0",
+     "prompt_tokens": 109,
+     "n_future": 2,
+     "predict_ms": 127.699
+    },
+    {
+     "key": "203|1",
+     "prompt_tokens": 144,
+     "n_future": 2,
+     "predict_ms": 128.943
+    },
+    {
+     "key": "222|1",
+     "prompt_tokens": 140,
+     "n_future": 2,
+     "predict_ms": 128.667
+    },
+    {
+     "key": "237|1",
+     "prompt_tokens": 122,
+     "n_future": 2,
+     "predict_ms": 127.798
+    },
+    {
+     "key": "250|8",
+     "prompt_tokens": 269,
+     "n_future": 0,
+     "predict_ms": 127.387
+    },
+    {
+     "key": "263|0",
+     "prompt_tokens": 106,
+     "n_future": 2,
+     "predict_ms": 127.002
+    },
+    {
+     "key": "279|15",
+     "prompt_tokens": 331,
+     "n_future": 0,
+     "predict_ms": 128.002
+    }
+   ],
+   "prompt_tokens_mean": 187.45
+  },
+  "dual_full_meld": {
+   "config": "dual_full_meld",
+   "run": "R20261022-121",
+   "kind": "full",
+   "checkpoint_file": "outputs/runs/R20261022-121/lock_meld_dual_c16_s123_lora_last/adapter_model.safetensors",
+   "checkpoint_sha256": "a84b8d20c54f6fc826b67382c0b1fd3797567eccc2f65a93843ab4045f986c23",
+   "n_utts": 20,
+   "iters": 10,
+   "predict_ms_mean": 127.75,
+   "predict_ms_median": 127.71,
+   "max_memory_allocated_mb": 6744.0,
+   "gpu": "NVIDIA RTX 6000D",
+   "per_utt": [
+    {
+     "key": "0|0",
+     "prompt_tokens": 166,
+     "n_future": 2,
+     "predict_ms": 127.49
+    },
+    {
+     "key": "15|5",
+     "prompt_tokens": 207,
+     "n_future": 0,
+     "predict_ms": 126.435
+    },
+    {
+     "key": "29|9",
+     "prompt_tokens": 254,
+     "n_future": 2,
+     "predict_ms": 126.349
+    },
+    {
+     "key": "46|7",
+     "prompt_tokens": 244,
+     "n_future": 1,
+     "predict_ms": 125.628
+    },
+    {
+     "key": "63|0",
+     "prompt_tokens": 111,
+     "n_future": 1,
+     "predict_ms": 127.387
+    },
+    {
+     "key": "76|2",
+     "prompt_tokens": 145,
+     "n_future": 2,
+     "predict_ms": 127.941
+    },
+    {
+     "key": "95|14",
+     "prompt_tokens": 359,
+     "n_future": 2,
+     "predict_ms": 128.202
+    },
+    {
+     "key": "109|5",
+     "prompt_tokens": 244,
+     "n_future": 2,
+     "predict_ms": 128.124
+    },
+    {
+     "key": "121|1",
+     "prompt_tokens": 160,
+     "n_future": 2,
+     "predict_ms": 130.233
+    },
+    {
+     "key": "132|6",
+     "prompt_tokens": 258,
+     "n_future": 2,
+     "predict_ms": 127.885
+    },
+    {
+     "key": "146|6",
+     "prompt_tokens": 262,
+     "n_future": 0,
+     "predict_ms": 127.71
+    },
+    {
+     "key": "162|5",
+     "prompt_tokens": 157,
+     "n_future": 0,
+     "predict_ms": 127.706
+    },
+    {
+     "key": "174|4",
+     "prompt_tokens": 221,
+     "n_future": 2,
+     "predict_ms": 127.88
+    },
+    {
+     "key": "189|0",
+     "prompt_tokens": 130,
+     "n_future": 2,
+     "predict_ms": 128.832
+    },
+    {
+     "key": "203|1",
+     "prompt_tokens": 156,
+     "n_future": 2,
+     "predict_ms": 127.414
+    },
+    {
+     "key": "222|1",
+     "prompt_tokens": 153,
+     "n_future": 2,
+     "predict_ms": 128.431
+    },
+    {
+     "key": "237|1",
+     "prompt_tokens": 163,
+     "n_future": 2,
+     "predict_ms": 127.641
+    },
+    {
+     "key": "250|8",
+     "prompt_tokens": 274,
+     "n_future": 0,
+     "predict_ms": 127.564
+    },
+    {
+     "key": "263|0",
+     "prompt_tokens": 120,
+     "n_future": 2,
+     "predict_ms": 127.615
+    },
+    {
+     "key": "279|15",
+     "prompt_tokens": 336,
+     "n_future": 0,
+     "predict_ms": 128.583
+    }
+   ],
+   "prompt_tokens_mean": 206.0
+  }
+ },
+ "stderr_tail": {
+  "dual_online_iemocap": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\n`torch_dtype` is deprecated! Use `dtype` instead!\n\nLoading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]\nLoading checkpoint shards:  25%|\u2588\u2588\u258c       | 1/4 [00:02<00:08,  2.87s/it]\nLoading checkpoint shards:  50%|\u2588\u2588\u2588\u2588\u2588     | 2/4 [00:06<00:06,  3.19s/it]\nLoading checkpoint shards:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 3/4 [00:09<00:03,  3.28s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.90s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  3.00s/it]\n",
+  "dual_full_iemocap": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\n`torch_dtype` is deprecated! Use `dtype` instead!\n\nLoading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]\nLoading checkpoint shards:  25%|\u2588\u2588\u258c       | 1/4 [00:02<00:08,  2.76s/it]\nLoading checkpoint shards:  50%|\u2588\u2588\u2588\u2588\u2588     | 2/4 [00:06<00:06,  3.08s/it]\nLoading checkpoint shards:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 3/4 [00:09<00:03,  3.18s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.83s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.91s/it]\n",
+  "e2_iemocap": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\nSome weights of the model checkpoint at models/wavlm-base-plus were not used when initializing WavLMModel: ['masked_spec_embed']\n- This IS expected if you are initializing WavLMModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).\n- This IS NOT expected if you are initializing WavLMModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).\n/root/miniconda3/lib/python3.12/site-packages/torch/nn/functional.py:6044: UserWarning: Support for mismatched key_padding_mask and attn_mask is deprecated. Use same type for both instead.\n  warnings.warn(\n",
+  "grace_iemocap": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\n`torch_dtype` is deprecated! Use `dtype` instead!\n\nLoading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]\nLoading checkpoint shards:  25%|\u2588\u2588\u258c       | 1/4 [00:02<00:08,  2.75s/it]\nLoading checkpoint shards:  50%|\u2588\u2588\u2588\u2588\u2588     | 2/4 [00:06<00:06,  3.11s/it]\nLoading checkpoint shards:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 3/4 [00:09<00:03,  3.20s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.85s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.93s/it]\n",
+  "dual_online_meld": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\n`torch_dtype` is deprecated! Use `dtype` instead!\n\nLoading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]\nLoading checkpoint shards:  25%|\u2588\u2588\u258c       | 1/4 [00:02<00:08,  2.71s/it]\nLoading checkpoint shards:  50%|\u2588\u2588\u2588\u2588\u2588     | 2/4 [00:06<00:06,  3.05s/it]\nLoading checkpoint shards:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 3/4 [00:09<00:03,  3.19s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:12<00:00,  3.14s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:12<00:00,  3.11s/it]\n",
+  "dual_full_meld": "/root/miniconda3/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:14: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.0)\n  from scipy.sparse import csr_matrix, issparse\n/root/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\n`torch_dtype` is deprecated! Use `dtype` instead!\n\nLoading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]\nLoading checkpoint shards:  25%|\u2588\u2588\u258c       | 1/4 [00:02<00:08,  2.76s/it]\nLoading checkpoint shards:  50%|\u2588\u2588\u2588\u2588\u2588     | 2/4 [00:06<00:06,  3.04s/it]\nLoading checkpoint shards:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 3/4 [00:09<00:03,  3.19s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.84s/it]\nLoading checkpoint shards: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4/4 [00:11<00:00,  2.91s/it]\n"
+ },
+ "gpu_apps_after": {
+  "dual_online_iemocap": [],
+  "dual_full_iemocap": [],
+  "e2_iemocap": [],
+  "grace_iemocap": [],
+  "dual_online_meld": [],
+  "dual_full_meld": []
+ },
+ "derived_iemocap": {
+  "online+e2_sequential_ms_mean": 146.16,
+  "online+e2_parallel_ms_mean": 134.69
+ }
+}

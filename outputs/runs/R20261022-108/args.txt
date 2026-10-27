@@ -1,0 +1,1 @@
+--dataset iemocap --epochs 3 --cosine --seed 123 --fast_eval --eval_last --ctx 16 --future_mode full --future_k 2 --tag lock_iemocap_full_c16_s123
